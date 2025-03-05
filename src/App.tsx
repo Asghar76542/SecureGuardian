@@ -17,6 +17,9 @@ import Settings from "./pages/Settings";
 import DeviceManager from "./pages/DeviceManager";
 import ApproveUserPage from "./pages/ApproveUserPage";
 import NotFound from "./pages/NotFound";
+import ProductsPage from "./pages/ProductsPage";
+import ProductDetailsPage from "./pages/ProductDetailsPage";
+import PurchaseOrdersPage from "./pages/admin/PurchaseOrdersPage";
 
 // Define the query client
 const queryClient = new QueryClient();
@@ -61,6 +64,18 @@ const App = () => (
               </ProtectedRoute>
             } />
             
+            {/* Products routes */}
+            <Route path="/products" element={
+              <ProtectedRoute>
+                <ProductsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/products/:productId" element={
+              <ProtectedRoute>
+                <ProductDetailsPage />
+              </ProtectedRoute>
+            } />
+            
             {/* Admin routes */}
             <Route path="/admin" element={
               <ProtectedRoute requireAdmin={true}>
@@ -90,6 +105,11 @@ const App = () => (
             <Route path="/admin/logs" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/purchase-orders" element={
+              <ProtectedRoute requireAdmin={true}>
+                <PurchaseOrdersPage />
               </ProtectedRoute>
             } />
             <Route path="/admin/approve/:userId" element={

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import SecuritySummary from '@/components/dashboard/SecuritySummary';
 import DeviceList from '@/components/dashboard/DeviceList';
@@ -9,15 +9,34 @@ import UserManagement from '@/components/dashboard/admin/UserManagement';
 import UserApprovals from '@/components/dashboard/admin/UserApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks } from 'lucide-react';
+import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks, ShoppingCart } from 'lucide-react';
 import GlobalThreatMonitor from '@/components/dashboard/admin/GlobalThreatMonitor';
 import ComplianceControls from '@/components/dashboard/admin/ComplianceControls';
 import SystemLogs from '@/components/dashboard/admin/SystemLogs';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 const AdminDashboard = () => {
   const { profile } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Fetch pending purchase orders count
+  const { data: pendingOrdersCount } = useQuery({
+    queryKey: ['pending-orders-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('purchase_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+        
+      if (error) throw error;
+      return count || 0;
+    },
+    refetchInterval: 30000 // Refetch every 30 seconds
+  });
 
   // Determine which content to show based on the URL
   const renderContent = () => {
@@ -40,6 +59,30 @@ const AdminDashboard = () => {
             </TabsList>
 
             <TabsContent value="overview">
+              {pendingOrdersCount > 0 && (
+                <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/20 rounded-full">
+                        <ShoppingCart className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Pending Purchase Orders</h3>
+                        <p className="text-sm text-muted-foreground">
+                          You have {pendingOrdersCount} pending purchase {pendingOrdersCount === 1 ? 'order' : 'orders'} that {pendingOrdersCount === 1 ? 'requires' : 'require'} your approval
+                        </p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/admin/purchase-orders')}
+                      className="shrink-0"
+                    >
+                      Review Orders
+                    </Button>
+                  </div>
+                </div>
+              )}
+            
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
                 <div className="xl:col-span-2">
                   <DeviceList isAdmin={true} />
@@ -123,14 +166,18 @@ const AdminDashboard = () => {
             ? 'Admin Dashboard' 
             : location.pathname.includes('/admin/system')
               ? 'System Management'
-              : 'Admin Control Panel'}
+              : location.pathname.includes('/admin/purchase-orders')
+                ? 'Purchase Orders'
+                : 'Admin Control Panel'}
         </h1>
         <p className="text-muted-foreground">
           {location.pathname === '/admin' || location.pathname === '/admin/' 
             ? `Welcome, Admin ${profile?.full_name}. This dashboard provides administrative controls and security monitoring.`
             : location.pathname.includes('/admin/system')
               ? 'Manage users, approvals, compliance settings, and system logs.'
-              : 'Access administrative controls and configurations.'}
+              : location.pathname.includes('/admin/purchase-orders')
+                ? 'Review and manage product purchase requests from users.'
+                : 'Access administrative controls and configurations.'}
         </p>
       </div>
 

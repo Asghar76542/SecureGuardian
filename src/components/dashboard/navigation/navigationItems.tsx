@@ -8,7 +8,9 @@ import {
   FileText,
   Cog,
   LayoutDashboard,
-  DatabaseZap
+  DatabaseZap,
+  ShoppingCart,
+  Package
 } from 'lucide-react';
 
 // Define the type for navigation items
@@ -41,6 +43,12 @@ export const getNavigationItems = (pathname: string, isAdmin: boolean): {
       href: '/dashboard/devices',
       active: pathname.includes('/dashboard/devices'),
       badge: 3
+    },
+    {
+      name: 'Products & Plans',
+      icon: <Package className="h-5 w-5" />,
+      href: '/products',
+      active: pathname.includes('/products')
     },
     {
       name: 'Threats',
@@ -83,6 +91,13 @@ export const getNavigationItems = (pathname: string, isAdmin: boolean): {
               pathname.includes('/admin/logs'),
       adminOnly: true,
       badge: 1
+    },
+    {
+      name: 'Purchase Orders',
+      icon: <ShoppingCart className="h-5 w-5" />,
+      href: '/admin/purchase-orders',
+      active: pathname.includes('/admin/purchase-orders'),
+      adminOnly: true
     }
   ];
 

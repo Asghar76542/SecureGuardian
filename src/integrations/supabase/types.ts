@@ -366,6 +366,248 @@ export type Database = {
         }
         Relationships: []
       }
+      product_plans: {
+        Row: {
+          billing_cycle: string
+          created_at: string | null
+          description: string | null
+          features: Json
+          id: string
+          is_active: boolean
+          is_popular: boolean | null
+          name: string
+          price: number
+          product_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          billing_cycle?: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_popular?: boolean | null
+          name: string
+          price: number
+          product_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          billing_cycle?: string
+          created_at?: string | null
+          description?: string | null
+          features?: Json
+          id?: string
+          is_active?: boolean
+          is_popular?: boolean | null
+          name?: string
+          price?: number
+          product_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_plans_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          created_at: string | null
+          description: string
+          features: Json
+          id: string
+          is_active: boolean
+          name: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          features?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      purchase_order_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: string
+          product_plan_id: string
+          purchase_order_id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: string
+          product_plan_id: string
+          purchase_order_id: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: string
+          product_plan_id?: string
+          purchase_order_id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_plan_id_fkey"
+            columns: ["product_plan_id"]
+            isOneToOne: false
+            referencedRelation: "product_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "pending_purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          amount: number
+          approval_date: string | null
+          approved_by: string | null
+          billing_cycle: string
+          created_at: string | null
+          id: string
+          notes: string | null
+          org_id: string | null
+          payment_status: string
+          product_plan_id: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          approval_date?: string | null
+          approved_by?: string | null
+          billing_cycle: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string | null
+          payment_status?: string
+          product_plan_id: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          approval_date?: string | null
+          approved_by?: string | null
+          billing_cycle?: string
+          created_at?: string | null
+          id?: string
+          notes?: string | null
+          org_id?: string | null
+          payment_status?: string
+          product_plan_id?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "pending_user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_product_plan_id_fkey"
+            columns: ["product_plan_id"]
+            isOneToOne: false
+            referencedRelation: "product_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "pending_user_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_incidents: {
         Row: {
           created_at: string | null
@@ -644,6 +886,21 @@ export type Database = {
       }
     }
     Views: {
+      pending_purchase_orders: {
+        Row: {
+          amount: number | null
+          billing_cycle: string | null
+          created_at: string | null
+          customer_email: string | null
+          customer_name: string | null
+          id: string | null
+          organization_name: string | null
+          plan_name: string | null
+          product_name: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       pending_user_profiles: {
         Row: {
           approval_status: string | null
@@ -673,6 +930,13 @@ export type Database = {
       }
     }
     Functions: {
+      approve_purchase_order: {
+        Args: {
+          order_id: string
+          admin_id: string
+        }
+        Returns: boolean
+      }
       approve_user: {
         Args: {
           user_uuid: string
@@ -733,6 +997,14 @@ export type Database = {
             }
             Returns: boolean
           }
+      reject_purchase_order: {
+        Args: {
+          order_id: string
+          admin_id: string
+          reason: string
+        }
+        Returns: boolean
+      }
       reject_user: {
         Args: {
           user_uuid: string
