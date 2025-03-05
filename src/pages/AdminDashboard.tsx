@@ -9,7 +9,7 @@ import UserManagement from '@/components/dashboard/admin/UserManagement';
 import UserApprovals from '@/components/dashboard/admin/UserApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, AlertTriangle, Activity, UserCheck } from 'lucide-react';
+import { Shield, Users, UserCheck, AlertTriangle, Activity } from 'lucide-react';
 import GlobalThreatMonitor from '@/components/dashboard/admin/GlobalThreatMonitor';
 import ComplianceControls from '@/components/dashboard/admin/ComplianceControls';
 import SystemLogs from '@/components/dashboard/admin/SystemLogs';
@@ -17,21 +17,24 @@ import SystemLogs from '@/components/dashboard/admin/SystemLogs';
 const AdminDashboard = () => {
   const { profile } = useAuth();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('users');
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Determine which tab to show based on the URL
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/admin/global-threats')) {
+    
+    if (path === '/admin' || path === '/admin/') {
+      setActiveTab('overview');
+    } else if (path.includes('/admin/users')) {
+      setActiveTab('users');
+    } else if (path.includes('/admin/approvals')) {
+      setActiveTab('approvals');
+    } else if (path.includes('/admin/global-threats')) {
       setActiveTab('threats');
     } else if (path.includes('/admin/audit')) {
       setActiveTab('compliance');
     } else if (path.includes('/admin/logs')) {
       setActiveTab('logs');
-    } else if (path.includes('/admin/approvals')) {
-      setActiveTab('approvals');
-    } else if (path.includes('/admin/users') || path === '/admin') {
-      setActiveTab('users');
     }
   }, [location.pathname]);
 
@@ -47,28 +50,43 @@ const AdminDashboard = () => {
       <SecuritySummary />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6 mb-6">
-        <TabsList className="grid grid-cols-5 mb-4">
+        <TabsList className="mb-4">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            <span>Overview</span>
+          </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">User Management</span>
+            <span>User Management</span>
           </TabsTrigger>
           <TabsTrigger value="approvals" className="flex items-center gap-2">
             <UserCheck className="h-4 w-4" />
-            <span className="hidden sm:inline">User Approvals</span>
+            <span>User Approvals</span>
           </TabsTrigger>
           <TabsTrigger value="threats" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
-            <span className="hidden sm:inline">Threat Monitoring</span>
+            <span>Threat Monitoring</span>
           </TabsTrigger>
           <TabsTrigger value="compliance" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            <span className="hidden sm:inline">Compliance</span>
+            <span>Compliance</span>
           </TabsTrigger>
           <TabsTrigger value="logs" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">System Logs</span>
+            <span>System Logs</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <div className="xl:col-span-2">
+              <DeviceList isAdmin={true} />
+            </div>
+            <div>
+              <ThreatFeed showAllThreats={true} />
+            </div>
+          </div>
+        </TabsContent>
 
         <TabsContent value="users">
           <UserManagement />
@@ -90,15 +108,6 @@ const AdminDashboard = () => {
           <SystemLogs />
         </TabsContent>
       </Tabs>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <div className="xl:col-span-2">
-          <DeviceList isAdmin={true} />
-        </div>
-        <div>
-          <ThreatFeed showAllThreats={true} />
-        </div>
-      </div>
     </DashboardLayout>
   );
 };

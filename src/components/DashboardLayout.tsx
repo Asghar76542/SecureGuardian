@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Shield, 
@@ -29,92 +29,87 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { profile, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  const standardMenuItems = [
+  // Simplified navigation structure - main sections only
+  const mainNavItems = [
+    {
+      name: 'Dashboard',
+      icon: <Shield className="h-5 w-5" />,
+      href: '/dashboard',
+      active: location.pathname === '/dashboard' || 
+              location.pathname.includes('/dashboard/devices') ||
+              location.pathname.includes('/dashboard/threats') ||
+              location.pathname.includes('/dashboard/communications') ||
+              location.pathname.includes('/dashboard/reports') ||
+              location.pathname.includes('/dashboard/incidents') ||
+              location.pathname.includes('/dashboard/mfa') ||
+              location.pathname.includes('/dashboard/support')
+    },
     {
       name: 'Device Security',
       icon: <Laptop className="h-5 w-5" />,
       href: '/dashboard/devices',
-      badge: 3,
+      active: location.pathname.includes('/dashboard/devices'),
+      badge: 3
     },
     {
       name: 'Threat Intelligence',
       icon: <AlertTriangle className="h-5 w-5" />,
       href: '/dashboard/threats',
-      badge: 2,
+      active: location.pathname.includes('/dashboard/threats'),
+      badge: 2
     },
     {
       name: 'Secure Communications',
       icon: <Lock className="h-5 w-5" />,
       href: '/dashboard/communications',
+      active: location.pathname.includes('/dashboard/communications')
     },
     {
-      name: 'Compliance Reports',
+      name: 'Reports & Compliance',
       icon: <FileText className="h-5 w-5" />,
       href: '/dashboard/reports',
-    },
-    {
-      name: 'Incident History',
-      icon: <History className="h-5 w-5" />,
-      href: '/dashboard/incidents',
-    },
-    {
-      name: 'MFA Management',
-      icon: <Shield className="h-5 w-5" />,
-      href: '/dashboard/mfa',
-    },
-    {
-      name: 'Help & Support',
-      icon: <HelpCircle className="h-5 w-5" />,
-      href: '/dashboard/support',
-    },
+      active: location.pathname.includes('/dashboard/reports')
+    }
   ];
 
-  const adminMenuItems = [
+  // Admin sections
+  const adminNavItems = [
+    {
+      name: 'Admin Dashboard',
+      icon: <Shield className="h-5 w-5" />,
+      href: '/admin',
+      active: location.pathname === '/admin' || 
+              location.pathname.includes('/admin/users') ||
+              location.pathname.includes('/admin/approvals') ||
+              location.pathname.includes('/admin/global-threats') ||
+              location.pathname.includes('/admin/emergency') ||
+              location.pathname.includes('/admin/audit') ||
+              location.pathname.includes('/admin/logs'),
+      adminOnly: true
+    },
     {
       name: 'User Management',
       icon: <Users className="h-5 w-5" />,
       href: '/admin/users',
-      adminOnly: true,
+      active: location.pathname.includes('/admin/users'),
+      adminOnly: true
     },
     {
-      name: 'User Approvals',
+      name: 'Approvals',
       icon: <UserCheck className="h-5 w-5" />,
       href: '/admin/approvals',
+      active: location.pathname.includes('/admin/approvals'),
       adminOnly: true,
-      badge: 1,
-    },
-    {
-      name: 'Global Threats',
-      icon: <AlertTriangle className="h-5 w-5" />,
-      href: '/admin/global-threats',
-      adminOnly: true,
-      badge: 5,
-    },
-    {
-      name: 'Emergency Protocols',
-      icon: <Bell className="h-5 w-5" />,
-      href: '/admin/emergency',
-      adminOnly: true,
-    },
-    {
-      name: 'Audit Controls',
-      icon: <FileText className="h-5 w-5" />,
-      href: '/admin/audit',
-      adminOnly: true,
-    },
-    {
-      name: 'System Logs',
-      icon: <History className="h-5 w-5" />,
-      href: '/admin/logs',
-      adminOnly: true,
-    },
+      badge: 1
+    }
   ];
 
   const menuItems = [
-    ...standardMenuItems,
-    ...(isAdmin ? adminMenuItems : []),
+    ...mainNavItems,
+    ...(isAdmin ? adminNavItems : []),
   ];
 
   const handleSignOut = async () => {
@@ -162,14 +157,14 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             </div>
           </div>
 
-          {/* Navigation */}
+          {/* Navigation - Simplified */}
           <nav className="flex-1 overflow-y-auto p-2">
             <ul className="space-y-1">
               {menuItems.map((item) => (
                 <li key={item.name}>
                   <Button
-                    variant="ghost"
-                    className="w-full justify-start hover:bg-primary/10 h-auto py-3"
+                    variant={item.active ? "default" : "ghost"}
+                    className={`w-full justify-start hover:bg-primary/10 h-auto py-3 ${item.active ? 'bg-primary/10 text-primary' : ''}`}
                     onClick={() => navigate(item.href)}
                   >
                     {item.icon}
@@ -182,6 +177,18 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               ))}
             </ul>
           </nav>
+
+          {/* Support & Help */}
+          <div className="p-2 border-t border-border">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-muted-foreground h-auto py-3"
+              onClick={() => navigate('/dashboard/support')}
+            >
+              <HelpCircle className="h-5 w-5 mr-3" />
+              Help & Support
+            </Button>
+          </div>
 
           {/* Footer */}
           <div className="p-4 border-t border-border">
@@ -214,7 +221,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate('/settings')}
+            >
               <Settings className="h-5 w-5" />
             </Button>
           </div>
