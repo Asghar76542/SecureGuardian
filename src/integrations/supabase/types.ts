@@ -698,12 +698,17 @@ export type Database = {
         }
         Returns: string
       }
-      get_user_role: {
-        Args: {
-          user_id: string
-        }
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
+      get_user_role:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: string
+          }
+        | {
+            Args: {
+              user_id: string
+            }
+            Returns: Database["public"]["Enums"]["user_role"]
+          }
       has_role: {
         Args: {
           user_id: string
@@ -717,12 +722,17 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_approved: {
-        Args: {
-          user_uuid: string
-        }
-        Returns: boolean
-      }
+      is_user_approved:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: boolean
+          }
+        | {
+            Args: {
+              user_uuid: string
+            }
+            Returns: boolean
+          }
       reject_user: {
         Args: {
           user_uuid: string
@@ -738,6 +748,7 @@ export type Database = {
       }
     }
     Enums: {
+      approval_status: "pending" | "approved" | "rejected"
       billing_cycle: "monthly" | "annually"
       device_status: "active" | "inactive" | "pending" | "maintenance"
       device_type: "ios" | "android" | "macbook" | "imac" | "tablet"

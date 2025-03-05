@@ -1,11 +1,15 @@
 
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Shield, Menu, X } from 'lucide-react';
+import { Shield, Menu, X, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isAuthenticated, isApproved, signOut } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +19,26 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard');
+    setMobileMenuOpen(false);
+  };
+
+  const handleLoginClick = () => {
+    navigate('/auth');
+    setMobileMenuOpen(false);
+  };
+
+  const handleSignupClick = () => {
+    navigate('/auth/register');
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogoutClick = () => {
+    signOut();
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-background/80 backdrop-blur-xl shadow-md' : 'bg-transparent'}`}>
@@ -31,8 +55,42 @@ const Header = () => {
           <a href="#contact" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">Contact</a>
         </nav>
         
-        <div className="hidden md:block">
-          <Button className="button-primary">Request Demo</Button>
+        <div className="hidden md:flex items-center space-x-4">
+          {isAuthenticated ? (
+            <>
+              {isApproved && (
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-2"
+                  onClick={handleDashboardClick}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Dashboard</span>
+                </Button>
+              )}
+              <Button 
+                className="button-primary"
+                onClick={handleLogoutClick}
+              >
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="outline"
+                onClick={handleLoginClick}
+              >
+                Sign In
+              </Button>
+              <Button 
+                className="button-primary"
+                onClick={handleSignupClick}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
         </div>
         
         <button 
@@ -75,12 +133,42 @@ const Header = () => {
             >
               Contact
             </a>
-            <Button 
-              className="button-primary w-full mt-4"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Request Demo
-            </Button>
+            
+            {isAuthenticated ? (
+              <div className="pt-2 space-y-2">
+                {isApproved && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-center"
+                    onClick={handleDashboardClick}
+                  >
+                    Dashboard
+                  </Button>
+                )}
+                <Button 
+                  className="button-primary w-full"
+                  onClick={handleLogoutClick}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <div className="pt-2 space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center"
+                  onClick={handleLoginClick}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  className="button-primary w-full"
+                  onClick={handleSignupClick}
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
