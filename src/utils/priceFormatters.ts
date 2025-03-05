@@ -71,14 +71,38 @@ export const calculateMultiDeviceCost = (
 };
 
 /**
+ * Calculate the total cost for hardware products (per unit)
+ */
+export const calculateHardwareCost = (
+  unitCount: number,
+  unitPrice: number
+) => {
+  const totalPrice = unitPrice * unitCount;
+  
+  return {
+    unitPrice,
+    totalPrice,
+  };
+};
+
+/**
  * Check if a plan is a device-based plan
  */
 export const isDevicePlan = (billingCycle?: string): boolean => {
   if (!billingCycle) return false;
   
-  // Check for exact match or contains 'device' or if it's a security plan (temporary fix)
+  // Consider infrastructure plans as device plans too
   return billingCycle === 'per-device' 
     || billingCycle.includes('device')
-    || billingCycle === 'security-device';
+    || billingCycle === 'security-device'
+    || billingCycle.includes('infrastructure');
 };
 
+/**
+ * Check if a product is a hardware/unit-based product
+ */
+export const isHardwareProduct = (billingCycle?: string): boolean => {
+  if (!billingCycle) return false;
+  
+  return billingCycle.includes('unit');
+};

@@ -1,6 +1,14 @@
 
 import { useState } from 'react';
-import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost, isDevicePlan } from '@/utils/priceFormatters';
+import { 
+  formatPrice, 
+  formatBillingCycle, 
+  getMonthlyEquivalent, 
+  calculateMultiDeviceCost, 
+  calculateHardwareCost,
+  isDevicePlan,
+  isHardwareProduct
+} from '@/utils/priceFormatters';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -11,26 +19,31 @@ interface PlanPricingProps {
 }
 
 const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingProps) => {
-  const [deviceCount, setDeviceCount] = useState(1);
-  const isHardware = billingCycle.includes('unit');
+  const [itemCount, setItemCount] = useState(1);
   
-  // Check if this is a device plan
+  // Check product types
   const devicePlan = isDevicePlan(billingCycle);
+  const hardwareProduct = isHardwareProduct(billingCycle);
   
   console.log('PlanPricing - billingCycle:', billingCycle);
   console.log('PlanPricing - isDevicePlan:', devicePlan);
+  console.log('PlanPricing - isHardwareProduct:', hardwareProduct);
   
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
   
-  // Calculate multi-device costs if it's a device plan
-  const costs = devicePlan 
-    ? calculateMultiDeviceCost(deviceCount, price) 
+  // Calculate costs based on product type
+  const deviceCosts = devicePlan 
+    ? calculateMultiDeviceCost(itemCount, price) 
+    : null;
+    
+  const hardwareCosts = hardwareProduct
+    ? calculateHardwareCost(itemCount, price)
     : null;
 
-  const handleDeviceCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleItemCountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const count = parseInt(e.target.value);
     if (!isNaN(count) && count > 0 && count <= 100) {
-      setDeviceCount(count);
+      setItemCount(count);
       if (onDeviceCountChange) {
         onDeviceCountChange(count);
       }
@@ -39,8 +52,8 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
 
   return (
     <div className="mb-4">
-      {/* Main price display */}
-      {devicePlan ? (
+      {/* Device plan pricing */}
+      {devicePlan && (
         <div className="space-y-4">
           <div>
             <span className="text-3xl font-bold">{formatPrice(price)}</span>
@@ -55,31 +68,72 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
                 type="number"
                 min="1"
                 max="100"
-                value={deviceCount}
-                onChange={handleDeviceCountChange}
+                value={itemCount}
+                onChange={handleItemCountChange}
                 className="w-20 h-8"
               />
             </div>
             
-            {costs && (
+            {deviceCosts && (
               <div className="space-y-1 mt-3 text-sm">
                 <div className="flex justify-between">
                   <span>One-time setup fee:</span>
-                  <span className="font-medium">{formatPrice(costs.setupFee)}</span>
+                  <span className="font-medium">{formatPrice(deviceCosts.setupFee)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Monthly subscription:</span>
-                  <span className="font-medium">{formatPrice(costs.monthlyPrice)}/month</span>
+                  <span className="font-medium">{formatPrice(deviceCosts.monthlyPrice)}/month</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t mt-2">
                   <span>First payment:</span>
-                  <span className="font-semibold">{formatPrice(costs.totalFirstPayment)}</span>
+                  <span className="font-semibold">{formatPrice(deviceCosts.totalFirstPayment)}</span>
                 </div>
               </div>
             )}
           </div>
         </div>
-      ) : (
+      )}
+      
+      {/* Hardware product pricing */}
+      {hardwareProduct && (
+        <div className="space-y-4">
+          <div>
+            <span className="text-3xl font-bold">{formatPrice(price)}</span>
+            <span className="text-muted-foreground ml-1">{formatBillingCycle(billingCycle)}</span>
+          </div>
+          
+          <div className="border-t pt-3 mt-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Label htmlFor="unitCount">Quantity:</Label>
+              <Input
+                id="unitCount"
+                type="number"
+                min="1"
+                max="100"
+                value={itemCount}
+                onChange={handleItemCountChange}
+                className="w-20 h-8"
+              />
+            </div>
+            
+            {hardwareCosts && (
+              <div className="space-y-1 mt-3 text-sm">
+                <div className="flex justify-between">
+                  <span>Unit price:</span>
+                  <span className="font-medium">{formatPrice(hardwareCosts.unitPrice)}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t mt-2">
+                  <span>Total cost:</span>
+                  <span className="font-semibold">{formatPrice(hardwareCosts.totalPrice)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      
+      {/* Standard pricing (not device or hardware) */}
+      {!devicePlan && !hardwareProduct && (
         <>
           <span className="text-3xl font-bold">{formatPrice(price)}</span>
           <span className="text-muted-foreground ml-1">{formatBillingCycle(billingCycle)}</span>

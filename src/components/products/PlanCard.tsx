@@ -10,7 +10,12 @@ import { supabase } from '@/integrations/supabase/client';
 import PlanFeatures from './PlanFeatures';
 import PlanPricing from './PlanPricing';
 import PurchaseConfirmDialog from './PurchaseConfirmDialog';
-import { calculateMultiDeviceCost, isDevicePlan } from '@/utils/priceFormatters';
+import { 
+  calculateMultiDeviceCost, 
+  calculateHardwareCost, 
+  isDevicePlan, 
+  isHardwareProduct 
+} from '@/utils/priceFormatters';
 
 interface PlanProps {
   plan: {
@@ -32,16 +37,24 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const { profile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [deviceCount, setDeviceCount] = useState(1);
+  const [itemCount, setItemCount] = useState(1);
   
   console.log('PlanCard - billing_cycle:', plan.billing_cycle);
-  console.log('PlanCard - isDevicePlan:', isDevicePlan(plan.billing_cycle));
   
   const devicePlan = isDevicePlan(plan.billing_cycle);
+  const hardwareProduct = isHardwareProduct(plan.billing_cycle);
+  
+  console.log('PlanCard - isDevicePlan:', devicePlan);
+  console.log('PlanCard - isHardwareProduct:', hardwareProduct);
   
   // Get pricing details for device-based plans
-  const costs = devicePlan 
-    ? calculateMultiDeviceCost(deviceCount, plan.price) 
+  const deviceCosts = devicePlan 
+    ? calculateMultiDeviceCost(itemCount, plan.price) 
+    : null;
+    
+  // Get pricing details for hardware products
+  const hardwareCosts = hardwareProduct
+    ? calculateHardwareCost(itemCount, plan.price)
     : null;
   
   const handlePurchase = async () => {
@@ -57,9 +70,24 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
-      const orderAmount = devicePlan
-        ? costs?.totalFirstPayment || plan.price
-        : plan.price;
+      let orderAmount = plan.price;
+      let orderNotes = null;
+      
+      // Calculate order amount based on product type
+      if (devicePlan && deviceCosts) {
+        orderAmount = deviceCosts.totalFirstPayment;
+        orderNotes = JSON.stringify({
+          itemCount,
+          setupFee: deviceCosts.setupFee,
+          monthlyPrice: deviceCosts.monthlyPrice
+        });
+      } else if (hardwareProduct && hardwareCosts) {
+        orderAmount = hardwareCosts.totalPrice;
+        orderNotes = JSON.stringify({
+          itemCount,
+          unitPrice: hardwareCosts.unitPrice
+        });
+      }
       
       const { data, error } = await supabase
         .from('purchase_orders')
@@ -69,13 +97,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           product_plan_id: plan.id,
           amount: orderAmount,
           billing_cycle: plan.billing_cycle,
-          ...(devicePlan && { 
-            notes: JSON.stringify({
-              deviceCount,
-              setupFee: costs?.setupFee,
-              monthlyPrice: costs?.monthlyPrice
-            })
-          })
+          ...(orderNotes && { notes: orderNotes })
         })
         .select()
         .single();
@@ -88,7 +110,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           purchase_order_id: data.id,
           product_id: plan.product_id,
           product_plan_id: plan.id,
-          quantity: devicePlan ? deviceCount : 1,
+          quantity: devicePlan || hardwareProduct ? itemCount : 1,
           unit_price: plan.price,
           total_price: orderAmount
         });
@@ -115,9 +137,9 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     }
   };
 
-  const handleDeviceCountChange = (count: number) => {
-    console.log('Device count changed to:', count);
-    setDeviceCount(count);
+  const handleItemCountChange = (count: number) => {
+    console.log('Item count changed to:', count);
+    setItemCount(count);
   };
 
   return (
@@ -138,7 +160,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           <PlanPricing 
             price={plan.price} 
             billingCycle={plan.billing_cycle}
-            onDeviceCountChange={handleDeviceCountChange}
+            onDeviceCountChange={handleItemCountChange}
           />
           
           <PlanFeatures features={plan.features} />
@@ -165,7 +187,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         billingCycle={plan.billing_cycle}
         onConfirm={handlePurchase}
         isSubmitting={isSubmitting}
-        deviceCount={deviceCount}
+        deviceCount={itemCount}
       />
     </>
   );

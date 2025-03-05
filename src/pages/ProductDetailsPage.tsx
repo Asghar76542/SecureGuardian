@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -87,10 +88,18 @@ const ProductDetailsPage = () => {
       console.log('Fetched plans:', data);
       
       const modifiedData = data.map(plan => {
+        // Convert security product plans to per-device
         if (product?.type === 'security' && !plan.billing_cycle.includes('device')) {
-          console.log('Modifying plan to be a device plan:', plan.name);
+          console.log('Modifying security plan to be a device plan:', plan.name);
           return { ...plan, billing_cycle: 'per-device' };
         }
+        
+        // Convert infrastructure product plans to per-device
+        if (product?.type === 'infrastructure' && !plan.billing_cycle.includes('device')) {
+          console.log('Modifying infrastructure plan to be a device plan:', plan.name);
+          return { ...plan, billing_cycle: 'infrastructure-device' };
+        }
+        
         return plan;
       });
       
