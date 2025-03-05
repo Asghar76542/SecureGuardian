@@ -928,6 +928,19 @@ export type Database = {
         }
         Relationships: []
       }
+      security_summary: {
+        Row: {
+          active_devices: number | null
+          active_threats: number | null
+          devices_at_risk: number | null
+          last_scan_time: string | null
+          org_id: string | null
+          security_score: number | null
+          time_since_scan: unknown | null
+          total_devices: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       approve_purchase_order: {
@@ -973,6 +986,18 @@ export type Database = {
             }
             Returns: Database["public"]["Enums"]["user_role"]
           }
+      get_user_security_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_devices: number
+          active_devices: number
+          devices_at_risk: number
+          active_threats: number
+          security_score: number
+          last_scan_time: string
+          time_since_scan: unknown
+        }[]
+      }
       has_role: {
         Args: {
           user_id: string
