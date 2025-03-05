@@ -1,6 +1,6 @@
 
 import FooterPageLayout from '@/components/FooterPageLayout';
-import { Shield, Alarm, Trash2 } from 'lucide-react';
+import { Shield, AlarmClock, Trash2 } from 'lucide-react';
 
 const EmergencyProtocols = () => {
   return (
@@ -24,7 +24,7 @@ const EmergencyProtocols = () => {
 
         <section>
           <h2 className="text-2xl font-semibold mb-4 flex items-center">
-            <Alarm className="h-6 w-6 mr-2 text-primary" />
+            <AlarmClock className="h-6 w-6 mr-2 text-primary" />
             Emergency Access Controls
           </h2>
           <p>
