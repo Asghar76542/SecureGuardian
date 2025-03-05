@@ -30,10 +30,23 @@ interface ApproveUserProps {
   userId: string;
   userName?: string;
   userEmail?: string;
+  userApprovalStatus?: string;
   afterApproval?: () => void;
 }
 
-const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUserProps) => {
+interface UserData {
+  full_name: string;
+  email: string;
+  approval_status?: string;
+}
+
+const ApproveUser = ({ 
+  userId, 
+  userName, 
+  userEmail, 
+  userApprovalStatus = 'pending',
+  afterApproval 
+}: ApproveUserProps) => {
   const queryClient = useQueryClient();
   const [selectedRole, setSelectedRole] = useState<UserRole>('user');
   const [rejectionReason, setRejectionReason] = useState<string>('');
@@ -43,7 +56,14 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
   const { data: user, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ['user', userId],
     queryFn: async () => {
-      if (userName && userEmail) return { full_name: userName, email: userEmail };
+      if (userName && userEmail) {
+        // Return a user object with the provided values and default approval status
+        return { 
+          full_name: userName, 
+          email: userEmail, 
+          approval_status: userApprovalStatus 
+        } as UserData;
+      }
       
       console.log("Fetching user details for approval:", userId);
       const { data, error } = await supabase
@@ -58,7 +78,7 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
       }
       
       console.log("Retrieved user for approval:", data);
-      return data;
+      return data as UserData;
     },
     enabled: !!userId,
   });
