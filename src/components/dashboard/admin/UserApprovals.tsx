@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -33,21 +34,71 @@ interface User {
 const UserApprovals = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // Subscribe to users table changes
+  useEffect(() => {
+    const subscription = supabase
+      .channel('public:users')
+      .on('postgres_changes', 
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'users',
+          filter: 'approval_status=eq.pending'
+        }, 
+        () => {
+          console.log('Users table changed, refreshing data');
+          queryClient.invalidateQueries({ queryKey: ['pendingUsers'] });
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [queryClient]);
   
   // Fetch pending users
   const { data: pendingUsers, isLoading, error } = useQuery({
     queryKey: ['pendingUsers'],
     queryFn: async () => {
+      console.log('Fetching pending users');
       const { data, error } = await supabase
         .from('users')
         .select('id, email, full_name, created_at')
         .eq('approval_status', 'pending')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching pending users:', error);
+        toast.error('Failed to load pending users');
+        throw error;
+      }
+      
+      console.log('Fetched pending users:', data?.length || 0);
       return data as User[];
     },
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
+
+  // Check for zaheer user specifically (for debugging)
+  useEffect(() => {
+    const checkForZaheer = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('email', '%zaheer%');
+      
+      if (error) {
+        console.error('Error checking for Zaheer:', error);
+      } else {
+        console.log('Found zaheer users:', data);
+      }
+    };
+    
+    checkForZaheer();
+  }, []);
 
   // Filter users based on search query
   const filteredUsers = pendingUsers?.filter(user => 
@@ -86,9 +137,9 @@ const UserApprovals = () => {
     );
   }
 
-  // Check if we have a specific user that needs approval
-  const hasSpecificPendingUser = pendingUsers?.some(user => 
-    user.id === "e9403c29-af1b-4a35-9d2d-e23ee6eb4136"
+  // Check if we have a specific user that needs approval (for test user Zaheer)
+  const hasZaheerUser = pendingUsers?.some(user => 
+    user.email.toLowerCase().includes('zaheer')
   );
 
   return (
@@ -113,15 +164,20 @@ const UserApprovals = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {hasSpecificPendingUser && (
+        {hasZaheerUser && (
           <div className="mb-6 p-4 border border-amber-300 bg-amber-50 rounded-lg">
             <div className="flex flex-col sm:flex-row justify-between items-center">
               <div>
                 <h3 className="font-semibold text-amber-800">Priority Approval</h3>
-                <p className="text-amber-700 text-sm">A priority user is waiting for your approval: Zaheer Asghar</p>
+                <p className="text-amber-700 text-sm">A priority user is waiting for your approval: Zaheer</p>
               </div>
               <Button 
-                onClick={() => navigate('/admin/approve/e9403c29-af1b-4a35-9d2d-e23ee6eb4136')}
+                onClick={() => {
+                  const zaheerUser = pendingUsers?.find(user => user.email.toLowerCase().includes('zaheer'));
+                  if (zaheerUser) {
+                    navigate(`/admin/approve/${zaheerUser.id}`);
+                  }
+                }}
                 className="mt-3 sm:mt-0 bg-amber-500 hover:bg-amber-600 text-white"
               >
                 Review Now <ExternalLink className="ml-1 h-3 w-3" />
