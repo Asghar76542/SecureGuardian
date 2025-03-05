@@ -1,26 +1,48 @@
 
 import React from 'react';
-import { Shield } from 'lucide-react';
+import { AlertTriangle, Clock, ShieldAlert } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SecurityHeaderProps {
   lastScan: string;
+  criticalThreats?: number;
+  highThreats?: number;
 }
 
-const SecurityHeader = ({ lastScan }: SecurityHeaderProps) => {
+const SecurityHeader = ({ lastScan, criticalThreats = 0, highThreats = 0 }: SecurityHeaderProps) => {
+  const hasUrgentThreats = criticalThreats > 0 || highThreats > 0;
+
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-      <div className="flex items-center space-x-3 mb-4 md:mb-0">
-        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Shield className="h-6 w-6 text-primary" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-display font-semibold">Security Status</h2>
-          <p className="text-muted-foreground">Overview of your security posture</p>
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+      <div>
+        <h2 className="text-2xl font-semibold mb-1">Security Dashboard</h2>
+        <div className="flex items-center text-muted-foreground text-sm">
+          <Clock className="h-4 w-4 mr-1" />
+          <span>Last scan: {lastScan}</span>
+          
+          {hasUrgentThreats && (
+            <div className="ml-4 flex items-center text-red-500">
+              <AlertTriangle className="h-4 w-4 mr-1" />
+              <span>
+                {criticalThreats > 0 && `${criticalThreats} critical`}
+                {criticalThreats > 0 && highThreats > 0 && ', '}
+                {highThreats > 0 && `${highThreats} high priority`} threat{(criticalThreats + highThreats) !== 1 ? 's' : ''} detected
+              </span>
+            </div>
+          )}
         </div>
       </div>
-      <div className="px-4 py-2 bg-card rounded-md border border-border">
-        <span className="text-sm text-muted-foreground">Last scan: </span>
-        <span className="font-medium">{lastScan}</span>
+
+      <div className="flex space-x-2 mt-4 md:mt-0">
+        {hasUrgentThreats && (
+          <Button variant="destructive" size="sm" className="flex items-center">
+            <ShieldAlert className="h-4 w-4 mr-1" />
+            Resolve Threats
+          </Button>
+        )}
+        <Button variant="outline" size="sm">
+          Run Scan
+        </Button>
       </div>
     </div>
   );

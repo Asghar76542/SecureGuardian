@@ -79,3 +79,42 @@ export const getLastScanText = (lastScanTime: string | null, timeSinceScan: stri
     return "Unknown";
   }
 };
+
+/**
+ * Determines the threat level color based on critical and high threat counts
+ * @param criticalCount Number of critical threats
+ * @param highCount Number of high priority threats
+ * @returns CSS color class
+ */
+export const getThreatLevelColor = (criticalCount: number, highCount: number): string => {
+  if (criticalCount > 0) return "text-red-500";
+  if (highCount > 0) return "text-amber-500";
+  return "text-green-500";
+};
+
+/**
+ * Formats the threat counts into a user-friendly summary
+ * @param criticalCount Number of critical threats
+ * @param highCount Number of high priority threats
+ * @param mediumCount Number of medium priority threats
+ * @param lowCount Number of low priority threats
+ * @returns Formatted threat summary
+ */
+export const formatThreatSummary = (
+  criticalCount: number, 
+  highCount: number,
+  mediumCount: number,
+  lowCount: number
+): string => {
+  const total = criticalCount + highCount + mediumCount + lowCount;
+  
+  if (total === 0) return "No active threats";
+  
+  const parts = [];
+  if (criticalCount > 0) parts.push(`${criticalCount} critical`);
+  if (highCount > 0) parts.push(`${highCount} high`);
+  if (mediumCount > 0) parts.push(`${mediumCount} medium`);
+  if (lowCount > 0) parts.push(`${lowCount} low`);
+  
+  return parts.join(', ');
+};

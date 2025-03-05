@@ -886,6 +886,24 @@ export type Database = {
       }
     }
     Views: {
+      enhanced_security_summary: {
+        Row: {
+          active_devices: number | null
+          active_threats: number | null
+          critical_threats: number | null
+          devices_at_risk: number | null
+          high_threats: number | null
+          last_scan_time: string | null
+          latest_threat_time: string | null
+          low_threats: number | null
+          medium_threats: number | null
+          org_id: string | null
+          security_score: number | null
+          time_since_scan: unknown | null
+          total_devices: number | null
+        }
+        Relationships: []
+      }
       pending_purchase_orders: {
         Row: {
           amount: number | null
@@ -968,6 +986,23 @@ export type Database = {
           user_role?: string
         }
         Returns: boolean
+      }
+      get_enhanced_security_summary: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_devices: number
+          active_devices: number
+          devices_at_risk: number
+          active_threats: number
+          security_score: number
+          last_scan_time: string
+          time_since_scan: unknown
+          critical_threats: number
+          high_threats: number
+          medium_threats: number
+          low_threats: number
+          latest_threat_time: string
+        }[]
       }
       get_user_org_id: {
         Args: {
