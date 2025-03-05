@@ -23,6 +23,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+// Define the type for navigation items to include the optional badge property
+interface NavItem {
+  name: string;
+  icon: React.ReactNode;
+  href: string;
+  active: boolean;
+  adminOnly?: boolean;
+  badge?: number;
+}
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
@@ -34,7 +44,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   // Simplified navigation structure - regular users
-  const userNavItems = [
+  const userNavItems: NavItem[] = [
     {
       name: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
@@ -70,7 +80,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   // Admin navigation
-  const adminNavItems = [
+  const adminNavItems: NavItem[] = [
     {
       name: 'Admin Dashboard',
       icon: <Shield className="h-5 w-5" />,
@@ -93,7 +103,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   ];
 
   // Common items for all users
-  const commonNavItems = [
+  const commonNavItems: NavItem[] = [
     {
       name: 'Settings & Support',
       icon: <Cog className="h-5 w-5" />,
