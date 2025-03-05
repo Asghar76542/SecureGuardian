@@ -16,7 +16,8 @@ import {
   FileText,
   History,
   HelpCircle,
-  Users
+  Users,
+  UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -76,6 +77,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       icon: <Users className="h-5 w-5" />,
       href: '/admin/users',
       adminOnly: true,
+    },
+    {
+      name: 'User Approvals',
+      icon: <UserCheck className="h-5 w-5" />,
+      href: '/admin/approvals',
+      adminOnly: true,
+      badge: 1,
     },
     {
       name: 'Global Threats',

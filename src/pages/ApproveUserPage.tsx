@@ -3,6 +3,8 @@ import { useParams, Navigate, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import ApproveUser from '@/components/dashboard/admin/ApproveUser';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const ApproveUserPage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -16,16 +18,25 @@ const ApproveUserPage = () => {
 
   // Handle after approval
   const handleAfterApproval = () => {
-    navigate('/admin');
+    navigate('/admin/approvals');
   };
 
   return (
     <DashboardLayout>
-      <div className="mb-6">
-        <h1 className="text-3xl font-display font-semibold">User Approval</h1>
-        <p className="text-muted-foreground">
-          Review and approve the user account
-        </p>
+      <div className="mb-6 flex items-center gap-4">
+        <Button 
+          variant="outline" 
+          size="icon"
+          onClick={() => navigate('/admin/approvals')}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <div>
+          <h1 className="text-3xl font-display font-semibold">User Approval</h1>
+          <p className="text-muted-foreground">
+            Review and approve the user account
+          </p>
+        </div>
       </div>
       
       <div className="max-w-md mx-auto">

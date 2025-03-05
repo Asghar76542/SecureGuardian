@@ -6,9 +6,10 @@ import SecuritySummary from '@/components/dashboard/SecuritySummary';
 import DeviceList from '@/components/dashboard/DeviceList';
 import ThreatFeed from '@/components/dashboard/ThreatFeed';
 import UserManagement from '@/components/dashboard/admin/UserManagement';
+import UserApprovals from '@/components/dashboard/admin/UserApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, AlertTriangle, Activity } from 'lucide-react';
+import { Shield, Users, AlertTriangle, Activity, UserCheck } from 'lucide-react';
 import GlobalThreatMonitor from '@/components/dashboard/admin/GlobalThreatMonitor';
 import ComplianceControls from '@/components/dashboard/admin/ComplianceControls';
 import SystemLogs from '@/components/dashboard/admin/SystemLogs';
@@ -27,6 +28,8 @@ const AdminDashboard = () => {
       setActiveTab('compliance');
     } else if (path.includes('/admin/logs')) {
       setActiveTab('logs');
+    } else if (path.includes('/admin/approvals')) {
+      setActiveTab('approvals');
     } else if (path.includes('/admin/users') || path === '/admin') {
       setActiveTab('users');
     }
@@ -44,10 +47,14 @@ const AdminDashboard = () => {
       <SecuritySummary />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6 mb-6">
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-5 mb-4">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">User Management</span>
+          </TabsTrigger>
+          <TabsTrigger value="approvals" className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">User Approvals</span>
           </TabsTrigger>
           <TabsTrigger value="threats" className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4" />
@@ -65,6 +72,10 @@ const AdminDashboard = () => {
 
         <TabsContent value="users">
           <UserManagement />
+        </TabsContent>
+        
+        <TabsContent value="approvals">
+          <UserApprovals />
         </TabsContent>
         
         <TabsContent value="threats">

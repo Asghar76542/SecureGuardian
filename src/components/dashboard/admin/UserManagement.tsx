@@ -4,9 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, X, UserPlus, Search, AlertCircle, ExternalLink } from 'lucide-react';
+import { Check, X, UserPlus, Search, AlertCircle, ExternalLink, UserCheck, Filter } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -25,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 interface User {
@@ -42,7 +43,9 @@ const UserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch users
   const { data: users, isLoading, error } = useQuery({
@@ -96,11 +99,19 @@ const UserManagement = () => {
     },
   });
 
-  // Filter users based on search query
-  const filteredUsers = users?.filter(user => 
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    user.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter users based on status and search query
+  const filteredUsers = users?.filter(user => {
+    // First filter by status
+    if (activeFilter !== 'all' && user.approval_status !== activeFilter) {
+      return false;
+    }
+    
+    // Then filter by search query
+    return user.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      user.full_name.toLowerCase().includes(searchQuery.toLowerCase());
+  });
+
+  const pendingCount = users?.filter(user => user.approval_status === 'pending').length || 0;
 
   const handleApproveClick = (user: User) => {
     setSelectedUser(user);
@@ -129,12 +140,6 @@ const UserManagement = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
-  // Check if we have the specific user that needs approval
-  const hasSpecificPendingUser = users?.some(user => 
-    user.id === "e9403c29-af1b-4a35-9d2d-e23ee6eb4136" && 
-    user.approval_status === "pending"
-  );
 
   if (isLoading) {
     return <div className="glass-panel p-6 rounded-xl">Loading users...</div>;
@@ -173,96 +178,93 @@ const UserManagement = () => {
         </div>
       </div>
 
-      {hasSpecificPendingUser && (
+      {pendingCount > 0 && (
         <div className="mb-6 p-4 border border-amber-300 bg-amber-50 rounded-lg">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div>
-              <h3 className="font-semibold text-amber-800">Pending Approval</h3>
-              <p className="text-amber-700 text-sm">A user is waiting for your approval: Zaheer Asghar</p>
+              <h3 className="font-semibold text-amber-800">Pending Approvals</h3>
+              <p className="text-amber-700 text-sm">
+                {pendingCount} {pendingCount === 1 ? 'user is' : 'users are'} waiting for your approval
+              </p>
             </div>
-            <Link 
-              to="/quick-approval" 
-              className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 rounded-md bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+            <Button 
+              onClick={() => navigate('/admin/approvals')} 
+              className="mt-3 sm:mt-0 bg-amber-500 hover:bg-amber-600 text-white"
             >
-              Review & Approve <ExternalLink className="ml-1 h-3 w-3" />
-            </Link>
+              <UserCheck className="h-4 w-4 mr-1" /> View Approvals
+            </Button>
           </div>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Last Login</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredUsers && filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.full_name}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(user.approval_status)}</TableCell>
-                  <TableCell>{formatDate(user.created_at)}</TableCell>
-                  <TableCell>{formatDate(user.last_login)}</TableCell>
-                  <TableCell className="text-right">
-                    {user.approval_status === 'pending' && (
-                      <div className="flex justify-end gap-2">
-                        <Link to={`/admin/approve/${user.id}`}>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 border-blue-500 text-blue-500 hover:bg-blue-500/10"
-                          >
-                            Review
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 border-green-500 text-green-500 hover:bg-green-500/10"
-                          onClick={() => handleApproveClick(user)}
-                        >
-                          <Check className="h-4 w-4 mr-1" /> Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 border-red-500 text-red-500 hover:bg-red-500/10"
-                          onClick={() => handleRejectClick(user)}
-                        >
-                          <X className="h-4 w-4 mr-1" /> Reject
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-6">
-                  {searchQuery ? 'No users found matching your search.' : 'No users found.'}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <Tabs value={activeFilter} onValueChange={setActiveFilter} className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <TabsList>
+            <TabsTrigger value="all">All Users</TabsTrigger>
+            <TabsTrigger value="approved">Approved</TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending
+              {pendingCount > 0 && (
+                <Badge className="ml-2 bg-amber-500">{pendingCount}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="rejected">Rejected</TabsTrigger>
+          </TabsList>
+          
+          <Button variant="outline" size="sm" className="flex items-center gap-1">
+            <Filter className="h-4 w-4" />
+            <span className="hidden sm:inline">More Filters</span>
+          </Button>
+        </div>
+        
+        <TabsContent value="all">
+          <UserTable 
+            users={filteredUsers} 
+            formatDate={formatDate} 
+            getStatusBadge={getStatusBadge} 
+            handleApproveClick={handleApproveClick}
+            handleRejectClick={handleRejectClick}
+            searchQuery={searchQuery}
+            navigate={navigate}
+          />
+        </TabsContent>
+        
+        <TabsContent value="approved">
+          <UserTable 
+            users={filteredUsers} 
+            formatDate={formatDate} 
+            getStatusBadge={getStatusBadge} 
+            handleApproveClick={handleApproveClick}
+            handleRejectClick={handleRejectClick}
+            searchQuery={searchQuery}
+            navigate={navigate}
+          />
+        </TabsContent>
+        
+        <TabsContent value="pending">
+          <UserTable 
+            users={filteredUsers} 
+            formatDate={formatDate} 
+            getStatusBadge={getStatusBadge} 
+            handleApproveClick={handleApproveClick}
+            handleRejectClick={handleRejectClick}
+            searchQuery={searchQuery}
+            navigate={navigate}
+          />
+        </TabsContent>
+        
+        <TabsContent value="rejected">
+          <UserTable 
+            users={filteredUsers} 
+            formatDate={formatDate} 
+            getStatusBadge={getStatusBadge} 
+            handleApproveClick={handleApproveClick}
+            handleRejectClick={handleRejectClick}
+            searchQuery={searchQuery}
+            navigate={navigate}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Approve User Dialog */}
       <AlertDialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
@@ -307,6 +309,102 @@ const UserManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+};
+
+// Extract the table component for reuse
+interface UserTableProps {
+  users?: User[];
+  formatDate: (date: string | null) => string;
+  getStatusBadge: (status: string) => JSX.Element;
+  handleApproveClick: (user: User) => void;
+  handleRejectClick: (user: User) => void;
+  searchQuery: string;
+  navigate: (path: string) => void;
+}
+
+const UserTable = ({ 
+  users, 
+  formatDate, 
+  getStatusBadge, 
+  handleApproveClick, 
+  handleRejectClick,
+  searchQuery,
+  navigate
+}: UserTableProps) => {
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>User</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Last Login</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{user.full_name}</div>
+                    <div className="text-sm text-muted-foreground">{user.email}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="capitalize">
+                    {user.role}
+                  </Badge>
+                </TableCell>
+                <TableCell>{getStatusBadge(user.approval_status)}</TableCell>
+                <TableCell>{formatDate(user.created_at)}</TableCell>
+                <TableCell>{formatDate(user.last_login)}</TableCell>
+                <TableCell className="text-right">
+                  {user.approval_status === 'pending' && (
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8"
+                        onClick={() => navigate(`/admin/approve/${user.id}`)}
+                      >
+                        Review
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-green-500 text-green-500 hover:bg-green-500/10"
+                        onClick={() => handleApproveClick(user)}
+                      >
+                        <Check className="h-4 w-4 mr-1" /> Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 border-red-500 text-red-500 hover:bg-red-500/10"
+                        onClick={() => handleRejectClick(user)}
+                      >
+                        <X className="h-4 w-4 mr-1" /> Reject
+                      </Button>
+                    </div>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center py-6">
+                {searchQuery ? 'No users found matching your search.' : 'No users found.'}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };

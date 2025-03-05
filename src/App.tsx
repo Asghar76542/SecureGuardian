@@ -16,7 +16,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Settings from "./pages/Settings";
 import DeviceManager from "./pages/DeviceManager";
 import ApproveUserPage from "./pages/ApproveUserPage";
-import QuickApproval from "./pages/QuickApproval";
 import NotFound from "./pages/NotFound";
 
 // Define the query client
@@ -88,6 +87,11 @@ const App = () => (
                 <AdminDashboard />
               </ProtectedRoute>
             } />
+            <Route path="/admin/approvals" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/global-threats" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
@@ -114,7 +118,6 @@ const App = () => (
               </ProtectedRoute>
             } />
             
-            <Route path="/quick-approval" element={<QuickApproval />} />
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Settings />
