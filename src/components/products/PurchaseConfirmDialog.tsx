@@ -2,7 +2,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Loader2 } from 'lucide-react';
-import { formatPrice, formatBillingCycle, getMonthlyEquivalent } from '@/utils/priceFormatters';
+import { formatPrice, formatBillingCycle, getMonthlyEquivalent, getMonthlyPriceText } from '@/utils/priceFormatters';
 
 interface PurchaseConfirmDialogProps {
   open: boolean;
@@ -25,7 +25,7 @@ const PurchaseConfirmDialog = ({
   onConfirm, 
   isSubmitting 
 }: PurchaseConfirmDialogProps) => {
-  const isHardware = billingCycle.includes('device') || billingCycle.includes('unit');
+  const isHardware = billingCycle.includes('unit');
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
 
   return (
@@ -56,7 +56,7 @@ const PurchaseConfirmDialog = ({
           <p className="text-sm text-muted-foreground mt-4">
             {isHardware 
               ? 'Your hardware purchase request will be sent to an administrator for approval.'
-              : 'Your purchase request will be sent to an administrator for approval.'}
+              : 'Your subscription purchase request will be sent to an administrator for approval.'}
             You will be notified once your request has been processed.
           </p>
         </div>

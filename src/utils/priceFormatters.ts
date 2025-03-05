@@ -12,24 +12,37 @@ export const formatPrice = (price: number) => {
 };
 
 export const formatBillingCycle = (billingCycle?: string) => {
-  if (billingCycle && billingCycle.includes('device')) {
-    return 'per device';
-  } else if (billingCycle && billingCycle.includes('unit')) {
+  if (!billingCycle) return '';
+  
+  if (billingCycle.includes('device')) {
+    return 'per device/year';
+  } else if (billingCycle.includes('unit')) {
     return 'per unit';
   } else {
-    return 'per device/year';
+    return 'per year';
   }
 };
 
 export const getMonthlyEquivalent = (price: number, billingCycle?: string) => {
-  // If it's a hardware product that's billed per unit, just return the price
-  if (billingCycle && (billingCycle.includes('device') || billingCycle.includes('unit'))) {
+  // If it's a hardware product that's billed per unit, just return null
+  if (billingCycle && billingCycle.includes('unit')) {
     return null;
   }
+  
+  // Calculate the monthly equivalent (rounded to nearest pound)
+  const monthlyPrice = Math.round(price / 12);
   
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',
     minimumFractionDigits: 0
-  }).format(Math.round(price / 12));
+  }).format(monthlyPrice);
+};
+
+/**
+ * Get a user-friendly text for the monthly price
+ */
+export const getMonthlyPriceText = (price: number) => {
+  const monthlyPrice = Math.round(price / 12);
+  return formatPrice(monthlyPrice);
 };
