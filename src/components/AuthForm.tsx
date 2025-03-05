@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, Loader2 } from 'lucide-react';
@@ -13,6 +13,7 @@ interface AuthFormProps {
 
 const AuthForm = ({ isLogin = true }: AuthFormProps) => {
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -27,15 +28,55 @@ const AuthForm = ({ isLogin = true }: AuthFormProps) => {
     try {
       if (isLogin) {
         await signIn(email, password);
+        // Login successful, navigation is handled in AuthContext
       } else {
-        console.log('Signing up with:', { email, password, fullName });
+        console.log('Signing up with:', { email, fullName });
+        
+        // Validate input
+        if (!fullName.trim()) {
+          throw new Error('Full name is required');
+        }
+        
+        if (password.length < 6) {
+          throw new Error('Password must be at least 6 characters');
+        }
+        
         const result = await signUp(email, password, fullName);
         console.log('Signup result:', result);
+        
+        // If we got here, signup was successful
+        toast.success('Account created successfully!', {
+          description: 'Your account is pending approval by an administrator.',
+        });
+        
+        // Navigate to pending approval page
+        navigate('/auth/pending');
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      setError(err.message || 'An error occurred');
-      toast.error(err.message || 'Authentication failed');
+      
+      // Extract the most user-friendly error message
+      let errorMessage = 'An unexpected error occurred';
+      
+      if (err.message) {
+        errorMessage = err.message;
+      } else if (err.error_description) {
+        errorMessage = err.error_description;
+      } else if (typeof err === 'string') {
+        errorMessage = err;
+      }
+      
+      // Special handling for common errors
+      if (errorMessage.includes('User already registered')) {
+        errorMessage = 'This email is already registered. Try signing in instead.';
+      } else if (errorMessage.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
+      } else if (errorMessage.toLowerCase().includes('network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      }
+      
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -113,6 +154,11 @@ const AuthForm = ({ isLogin = true }: AuthFormProps) => {
             className="bg-secondary/50 border-border"
             minLength={6}
           />
+          {!isLogin && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Password must be at least 6 characters long
+            </p>
+          )}
         </div>
 
         <Button 

@@ -248,11 +248,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      toast.success('Account created successfully!', {
-        description: 'Your account is pending approval.',
-      });
-      
-      navigate('/auth/pending');
       return data;
     } catch (error: any) {
       console.error('Error signing up:', error);
