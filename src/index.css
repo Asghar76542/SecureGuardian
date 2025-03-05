@@ -1,26 +1,25 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 5%;
+    --background: 222 47% 4%;
     --foreground: 210 20% 98%;
 
-    --card: 0 0% 9%;
+    --card: 222 47% 7%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 0 0% 9%;
+    --popover: 222 47% 7%;
     --popover-foreground: 210 20% 98%;
 
     --primary: 262 83% 76%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 0 0% 10%;
+    --secondary: 217 33% 10%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 0 0% 15%;
+    --muted: 217 33% 15%;
     --muted-foreground: 215 15% 65%;
 
     --accent: 262 83% 76%;
@@ -29,8 +28,8 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 215 15% 15%;
-    --input: 215 15% 15%;
+    --border: 217 33% 15%;
+    --input: 217 33% 15%;
     --ring: 262 83% 76%;
 
     --radius: 0.5rem;
@@ -48,9 +47,12 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-foreground;
-    background-image: linear-gradient(rgba(20, 20, 20, 0.8) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(20, 20, 20, 0.8) 1px, transparent 1px);
-    background-size: 30px 30px;
+    background-image: 
+      radial-gradient(circle at 20px 20px, rgba(60, 70, 90, 0.1) 1px, transparent 1px),
+      linear-gradient(rgba(20, 30, 50, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(20, 30, 50, 0.4) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px, 40px 40px;
+    background-position: 0 0, 0 0, 0 0;
   }
 
   .glass-panel {
@@ -62,7 +64,7 @@
   }
 
   .section-container {
-    @apply max-w-7xl mx-auto px-6 md:px-8 py-20 md:py-28;
+    @apply max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24;
   }
 
   .section-title {
@@ -74,7 +76,7 @@
   }
 
   .feature-card {
-    @apply bg-card rounded-lg p-6 transition-all duration-300 hover:shadow-glow border border-border/50;
+    @apply bg-card/80 backdrop-blur-sm rounded-xl p-6 transition-all duration-300 hover:shadow-glow border border-border/30;
   }
 
   .feature-icon {
@@ -82,18 +84,17 @@
   }
 
   .button-primary {
-    @apply bg-primary text-primary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-primary/80;
+    @apply bg-primary text-primary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-primary/90;
   }
 
   .button-secondary {
-    @apply bg-secondary text-secondary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-secondary/80 border border-border;
+    @apply bg-secondary text-secondary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-secondary/90 border border-border;
   }
 
   .section-tag {
-    @apply inline-flex items-center px-3 py-1 rounded-full bg-secondary/50 border border-border text-xs uppercase text-foreground/80 mx-auto mb-6;
+    @apply inline-flex items-center px-3 py-1 rounded-full bg-secondary/80 border border-primary/20 text-xs uppercase text-foreground/90 mb-6;
   }
 
-  /* Grid background for specific sections */
   .grid-section {
     position: relative;
   }
@@ -111,7 +112,6 @@
     z-index: -1;
   }
 
-  /* Transition utilities */
   .transition-fade {
     @apply transition-all duration-300 ease-in-out;
   }
@@ -120,7 +120,6 @@
     will-change: transform;
   }
 
-  /* FAQ accordion */
   .faq-accordion {
     @apply border-b border-border py-4;
   }
@@ -132,32 +131,43 @@
   .faq-accordion-content {
     @apply pt-2 pb-4 text-muted-foreground;
   }
-}
 
-/* Animation delay utilities */
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-600 {
-  animation-delay: 600ms;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  .shadow-glow {
+    box-shadow: 0 0 15px rgba(155, 135, 245, 0.3);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .shadow-glow-intense {
+    box-shadow: 0 0 25px rgba(155, 135, 245, 0.5);
   }
-}
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease forwards;
+  .card-highlight {
+    @apply border-primary/30 bg-gradient-to-b from-card/80 to-secondary/50 backdrop-blur-md;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+  }
 }

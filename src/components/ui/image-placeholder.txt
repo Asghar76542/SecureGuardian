@@ -1,0 +1,10 @@
+
+Note: Please upload a high-quality, professional security shield logo image that is:
+- Minimal and geometric in design
+- Has a clean, modern look with a purple/blue color scheme
+- Ideally a 3D or flat design shield with technological elements
+- No text or complex details
+- Transparent background (PNG format)
+- At least 500x500px, ideally 1000x1000px
+
+Once uploaded, rename it to "shield-security.png" and place it in the public/lovable-uploads/ directory.
