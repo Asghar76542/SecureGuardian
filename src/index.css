@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 220 30% 8%;
+    --background: 0 0% 5%;
     --foreground: 210 20% 98%;
 
-    --card: 220 25% 12%;
+    --card: 0 0% 9%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 220 25% 12%;
+    --popover: 0 0% 9%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 195 90% 55%;
+    --primary: 262 83% 76%;
     --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 15% 15%;
+    --secondary: 0 0% 10%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 220 15% 20%;
+    --muted: 0 0% 15%;
     --muted-foreground: 215 15% 65%;
 
-    --accent: 220 15% 15%;
+    --accent: 262 83% 76%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 15%;
-    --ring: 195 90% 55%;
+    --border: 215 15% 15%;
+    --input: 215 15% 15%;
+    --ring: 262 83% 76%;
 
     --radius: 0.5rem;
   }
@@ -48,10 +48,13 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased selection:bg-primary/30 selection:text-foreground;
+    background-image: linear-gradient(rgba(20, 20, 20, 0.8) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(20, 20, 20, 0.8) 1px, transparent 1px);
+    background-size: 30px 30px;
   }
 
   .glass-panel {
-    @apply bg-secondary/50 backdrop-blur-md border border-white/10 shadow-glass;
+    @apply bg-card/50 backdrop-blur-md border border-white/10 shadow-glass;
   }
 
   .highlight-text {
@@ -71,19 +74,41 @@
   }
 
   .feature-card {
-    @apply glass-panel rounded-lg p-6 transition-all duration-300 hover:shadow-glow;
+    @apply bg-card rounded-lg p-6 transition-all duration-300 hover:shadow-glow border border-border/50;
   }
 
   .feature-icon {
-    @apply h-10 w-10 mb-4 text-primary animate-pulse-slow;
+    @apply h-10 w-10 mb-4 text-primary;
   }
 
   .button-primary {
-    @apply bg-primary text-primary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-background;
+    @apply bg-primary text-primary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-primary/80;
   }
 
   .button-secondary {
-    @apply bg-secondary text-secondary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-secondary/80 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:ring-offset-2 focus:ring-offset-background border border-border;
+    @apply bg-secondary text-secondary-foreground rounded-md px-5 py-2.5 font-medium transition-all duration-300 hover:bg-secondary/80 border border-border;
+  }
+
+  .section-tag {
+    @apply inline-flex items-center px-3 py-1 rounded-full bg-secondary/50 border border-border text-xs uppercase text-foreground/80 mx-auto mb-6;
+  }
+
+  /* Grid background for specific sections */
+  .grid-section {
+    position: relative;
+  }
+
+  .grid-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(rgba(20, 20, 20, 0.8) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(20, 20, 20, 0.8) 1px, transparent 1px);
+    background-size: 30px 30px;
+    z-index: -1;
   }
 
   /* Transition utilities */
@@ -93,6 +118,19 @@
 
   .will-change-transform {
     will-change: transform;
+  }
+
+  /* FAQ accordion */
+  .faq-accordion {
+    @apply border-b border-border py-4;
+  }
+  
+  .faq-accordion-button {
+    @apply flex w-full justify-between items-center py-2 text-left font-medium;
+  }
+  
+  .faq-accordion-content {
+    @apply pt-2 pb-4 text-muted-foreground;
   }
 }
 
@@ -107,4 +145,19 @@
 
 .animation-delay-600 {
   animation-delay: 600ms;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
 }

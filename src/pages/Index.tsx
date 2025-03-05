@@ -2,10 +2,10 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
-import UserGroups from "@/components/UserGroups";
-import SecurityMeasures from "@/components/SecurityMeasures";
-import EmergencyProtocols from "@/components/EmergencyProtocols";
-import RequestDemo from "@/components/RequestDemo";
+import Testimonials from "@/components/Testimonials";
+import HowItWorks from "@/components/HowItWorks";
+import FAQ from "@/components/FAQ";
+import CallToAction from "@/components/CallToAction";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -15,10 +15,10 @@ const Index = () => {
       <main>
         <Hero />
         <Features />
-        <SecurityMeasures />
-        <UserGroups />
-        <EmergencyProtocols />
-        <RequestDemo />
+        <Testimonials />
+        <HowItWorks />
+        <FAQ />
+        <CallToAction />
       </main>
       <Footer />
     </div>
