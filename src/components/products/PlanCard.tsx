@@ -43,6 +43,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   
   const devicePlan = isDevicePlan(plan.billing_cycle);
   const hardwareProduct = isHardwareProduct(plan.billing_cycle);
+  const isSecuritySuite = productName.includes("Security Suite");
   
   console.log('PlanCard - isDevicePlan:', devicePlan);
   console.log('PlanCard - isHardwareProduct:', hardwareProduct);
@@ -142,9 +143,12 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     setItemCount(count);
   };
 
+  // Additional classes for security suite plan cards to make them more prominent
+  const cardClasses = `overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''} ${isSecuritySuite ? 'shadow-md' : ''}`;
+
   return (
     <>
-      <Card className={`overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''}`}>
+      <Card className={cardClasses}>
         {plan.is_popular && (
           <div className="bg-primary text-primary-foreground text-center py-1 text-sm font-medium">
             Most Popular

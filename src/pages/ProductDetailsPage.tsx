@@ -9,6 +9,13 @@ import PlanCard from '@/components/products/PlanCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
 
 interface ProductFeature {
   name: string;
@@ -131,6 +138,8 @@ const ProductDetailsPage = () => {
     }
   };
 
+  const isSecuritySuite = product?.name?.includes("Security Suite");
+
   const isLoading = productLoading || plansLoading;
   const error = productError || plansError;
 
@@ -176,25 +185,141 @@ const ProductDetailsPage = () => {
         </p>
       </div>
 
-      <div className="mb-8">
-        <h2 className="text-xl font-medium mb-4">Key Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {product.features.map((feature, index) => (
-            <div key={index} className="bg-card p-4 rounded-lg border">
-              <h3 className="font-medium mb-2">{feature.name}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
+      {isSecuritySuite ? (
+        <>
+          {/* Security Suite Pillars */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Key Security Features: A Triad of Protection</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-card p-6 rounded-lg border">
+                <h3 className="font-medium text-lg mb-3">Proactive Threat Prevention</h3>
+                <p className="text-sm text-muted-foreground">
+                  We go beyond reactive measures. Our suite is designed to identify and neutralize threats before they can impact your operations, minimizing risk and disruption.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <h3 className="font-medium text-lg mb-3">Rapid Incident Response & Containment</h3>
+                <p className="text-sm text-muted-foreground">
+                  In the event of a security incident, speed is paramount. Our suite ensures swift detection, containment, and remediation, minimizing damage and downtime.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <h3 className="font-medium text-lg mb-3">Data Protection & Compliance Assurance</h3>
+                <p className="text-sm text-muted-foreground">
+                  Data is the lifeblood of your organization. We provide robust tools and processes to protect sensitive information and meet stringent regulatory requirements.
+                </p>
+              </div>
             </div>
-          ))}
+          </div>
+
+          {/* Advanced Security Features */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Advanced Security Features: Going Beyond the Basics</h2>
+            <Accordion type="single" collapsible className="mb-6">
+              <AccordionItem value="crypto-shredding">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Remote Crypto-Shredding: Military-Grade Data Erasure, Total Control
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    When devices are lost, stolen, or reach their end-of-life, the risk of data breach is significant. Our Remote Crypto-Shredding feature provides unparalleled control over sensitive data, allowing you to remotely and irrevocably wipe devices, ensuring data is unrecoverable.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>Beyond Deletion, True Destruction: Ensures data is forensically unrecoverable</li>
+                      <li>Customizable Shredding Levels: Choose from various overwrite patterns</li>
+                      <li>Centralized Management: Remotely initiate and manage crypto-shredding</li>
+                      <li>Detailed Audit Logs & Reporting: Generate comprehensive reports</li>
+                      <li>Proactive Data Breach Prevention: Reduces risk of data leaks</li>
+                      <li>Supports Compliance Mandates: GDPR, CCPA, HIPAA compliance</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="duress-codes">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Duress Codes with Selective Data Wipe: Discreet Distress Signaling
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    In situations of duress, coercion, or forced access, employee safety is paramount. Our enhanced Duress Codes feature provides a covert method for employees to signal for help while also selectively wiping sensitive data from designated apps or locations on the device.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>Dual-Action Security: Combines distress signaling with data protection</li>
+                      <li>Selective Data Wipe Customization: Define specific apps and locations</li>
+                      <li>Immediate Data Protection in Crisis: Prevents unauthorized access</li>
+                      <li>Enhanced Employee Safety: Empowers employees with discreet help signals</li>
+                      <li>Customizable Response Protocols: Tailor to your organization's policies</li>
+                      <li>Geo-Tracking Integration (Professional & Enterprise Plans)</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="soc-monitoring">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  24/7 Security Operations Center (SOC) Monitoring: Always-On Vigilance
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    Our dedicated Security Operations Center (SOC) acts as your always-on security nerve center, providing continuous, 24/7 monitoring of your entire security environment. Staffed by highly skilled security analysts and threat hunters with advanced threat intelligence.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>Proactive Threat Hunting: Goes beyond reactive alerts</li>
+                      <li>Real-Time Threat Intelligence: Leverages up-to-the-minute threat data</li>
+                      <li>Expert Security Analyst Team: Access to experienced professionals</li>
+                      <li>Reduced Dwell Time of Threats: Faster detection and response</li>
+                      <li>Improved Security Posture: Strengthens overall security resilience</li>
+                      <li>Compliance & Audit Readiness: Demonstrates security commitment</li>
+                      <li>Scalable Security Solution: Adapts to your organization's growth</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </>
+      ) : (
+        // Standard product features section for non-Security Suite products
+        <div className="mb-8">
+          <h2 className="text-xl font-medium mb-4">Key Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {product.features.map((feature, index) => (
+              <div key={index} className="bg-card p-4 rounded-lg border">
+                <h3 className="font-medium mb-2">{feature.name}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <h2 className="text-xl font-medium mb-2">Available Plans</h2>
         <p className="text-muted-foreground mb-6">
           {product.type === 'hardware' 
             ? 'Enterprise-grade security hardware with simple procurement options' 
-            : 'Enterprise-grade security with simple annual billing'}
+            : product.type === 'security'
+              ? 'Select the security plan that aligns with your organization\'s size, risk profile, and specific security requirements'
+              : 'Enterprise-grade security with simple annual billing'}
         </p>
+        
+        {isSecuritySuite && (
+          <div className="bg-secondary/20 p-4 rounded-md mb-6 text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Compliance Note:</p>
+            <p>
+              Our Security Suite is designed to be a powerful tool in assisting organizations to meet various compliance requirements. 
+              However, achieving and maintaining full regulatory compliance is a shared responsibility. It depends not only on the 
+              technology deployed but also on your specific implementation, internal policies, and organizational practices.
+            </p>
+          </div>
+        )}
         
         {plans && plans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
