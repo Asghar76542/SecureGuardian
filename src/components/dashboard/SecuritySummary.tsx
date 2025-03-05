@@ -2,7 +2,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import SecurityHeader from './security/SecurityHeader';
 import SecurityScoreCard from './security/SecurityScoreCard';
@@ -11,6 +10,7 @@ import DevicesAtRiskCard from './security/DevicesAtRiskCard';
 import ComplianceStatusCard from './security/ComplianceStatusCard';
 import SecuritySummarySkeleton from './security/SecuritySummarySkeleton';
 import SecuritySummaryError from './security/SecuritySummaryError';
+import { getLastScanText } from '@/utils/securityDataHelpers';
 
 interface SecuritySummaryData {
   total_devices: number;
@@ -67,36 +67,6 @@ const SecuritySummary = () => {
     },
   });
 
-  // Get a user-friendly time since last scan
-  const getLastScanText = () => {
-    if (!securityStats?.last_scan_time) return "Never";
-    
-    // If we have the formatted interval from Postgres
-    if (securityStats.time_since_scan) {
-      const interval = securityStats.time_since_scan;
-      if (interval.includes('days')) {
-        const days = parseInt(interval);
-        return days > 1 ? `${days} days ago` : "Yesterday";
-      } else if (interval.includes('hours')) {
-        const hours = parseInt(interval);
-        return `${hours} hours ago`;
-      } else if (interval.includes('minutes')) {
-        const minutes = parseInt(interval);
-        return minutes <= 1 ? "Just now" : `${minutes} minutes ago`;
-      } else {
-        return "Recently";
-      }
-    }
-    
-    // Fallback to formatting the timestamp
-    try {
-      const scanDate = new Date(securityStats.last_scan_time);
-      return format(scanDate, "h:mm a, MMM d");
-    } catch (e) {
-      return "Unknown";
-    }
-  };
-
   // Use a loading state while fetching data
   if (isLoading) {
     return <SecuritySummarySkeleton />;
@@ -115,7 +85,7 @@ const SecuritySummary = () => {
     total_devices: 0,
   };
   
-  const lastScan = getLastScanText();
+  const lastScan = getLastScanText(stats.last_scan_time, stats.time_since_scan);
 
   return (
     <div className="glass-panel rounded-xl p-6 mb-8">

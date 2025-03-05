@@ -50,3 +50,32 @@ export const formatTimeInterval = (interval: string | null): string => {
   
   return "Recently";
 };
+
+/**
+ * Gets a user-friendly text representation of the last security scan time
+ * @param lastScanTime ISO timestamp of the last scan
+ * @param timeSinceScan PostgreSQL interval string 
+ * @returns User-friendly last scan text
+ */
+export const getLastScanText = (lastScanTime: string | null, timeSinceScan: string | null): string => {
+  if (!lastScanTime) return "Never";
+  
+  // If we have the formatted interval from Postgres
+  if (timeSinceScan) {
+    return formatTimeInterval(timeSinceScan);
+  }
+  
+  // Fallback to formatting the timestamp
+  try {
+    const scanDate = new Date(lastScanTime);
+    return new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+      month: 'short',
+      day: 'numeric'
+    }).format(scanDate);
+  } catch (e) {
+    return "Unknown";
+  }
+};
