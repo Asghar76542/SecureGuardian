@@ -54,7 +54,8 @@ const SecuritySummary = () => {
         active_threats: data[0].active_threats || 0,
         security_score: data[0].security_score || 0,
         last_scan_time: data[0].last_scan_time,
-        time_since_scan: data[0].time_since_scan,
+        // Convert the interval to a string representation
+        time_since_scan: data[0].time_since_scan ? String(data[0].time_since_scan) : null,
       };
     },
   });
@@ -232,3 +233,4 @@ const SecuritySummary = () => {
 };
 
 export default SecuritySummary;
+
