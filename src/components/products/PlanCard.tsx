@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PlanFeatures from './PlanFeatures';
 import PlanPricing from './PlanPricing';
 import PurchaseConfirmDialog from './PurchaseConfirmDialog';
+import { calculateMultiDeviceCost } from '@/utils/priceFormatters';
 
 interface PlanProps {
   plan: {
@@ -31,6 +32,14 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const { profile } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [deviceCount, setDeviceCount] = useState(1);
+  
+  const isDevicePlan = plan.billing_cycle.includes('device');
+  
+  // Get pricing details for device-based plans
+  const costs = isDevicePlan 
+    ? calculateMultiDeviceCost(deviceCount, plan.price) 
+    : null;
   
   const handlePurchase = async () => {
     if (!profile) {
@@ -45,14 +54,25 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
+      const orderAmount = isDevicePlan
+        ? costs?.totalFirstPayment || plan.price
+        : plan.price;
+      
       const { data, error } = await supabase
         .from('purchase_orders')
         .insert({
           user_id: profile.id,
           ...(profile.org_id && { org_id: profile.org_id }),
           product_plan_id: plan.id,
-          amount: plan.price,
-          billing_cycle: plan.billing_cycle
+          amount: orderAmount,
+          billing_cycle: plan.billing_cycle,
+          ...(isDevicePlan && { 
+            notes: JSON.stringify({
+              deviceCount,
+              setupFee: costs?.setupFee,
+              monthlyPrice: costs?.monthlyPrice
+            })
+          })
         })
         .select()
         .single();
@@ -65,9 +85,9 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           purchase_order_id: data.id,
           product_id: plan.product_id,
           product_plan_id: plan.id,
-          quantity: 1,
+          quantity: isDevicePlan ? deviceCount : 1,
           unit_price: plan.price,
-          total_price: plan.price
+          total_price: orderAmount
         });
         
       if (itemError) throw itemError;
@@ -136,6 +156,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         billingCycle={plan.billing_cycle}
         onConfirm={handlePurchase}
         isSubmitting={isSubmitting}
+        deviceCount={deviceCount}
       />
     </>
   );

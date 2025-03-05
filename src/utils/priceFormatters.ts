@@ -15,7 +15,7 @@ export const formatBillingCycle = (billingCycle?: string) => {
   if (!billingCycle) return '';
   
   if (billingCycle.includes('device')) {
-    return 'per device/year';
+    return 'per device/month';
   } else if (billingCycle.includes('unit')) {
     return 'per unit';
   } else {
@@ -45,4 +45,22 @@ export const getMonthlyEquivalent = (price: number, billingCycle?: string) => {
 export const getMonthlyPriceText = (price: number) => {
   const monthlyPrice = Math.round(price / 12);
   return formatPrice(monthlyPrice);
+};
+
+/**
+ * Calculate the total cost for multi-device plans
+ */
+export const calculateMultiDeviceCost = (
+  deviceCount: number, 
+  monthlyPrice: number, 
+  setupFeePerDevice: number = 80
+) => {
+  const totalSetupFee = setupFeePerDevice * deviceCount;
+  const totalMonthlyPrice = monthlyPrice * deviceCount;
+  
+  return {
+    setupFee: totalSetupFee,
+    monthlyPrice: totalMonthlyPrice,
+    totalFirstPayment: totalSetupFee + totalMonthlyPrice,
+  };
 };

@@ -1,8 +1,9 @@
 
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Loader2 } from 'lucide-react';
-import { formatPrice, formatBillingCycle, getMonthlyEquivalent, getMonthlyPriceText } from '@/utils/priceFormatters';
+import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost } from '@/utils/priceFormatters';
 
 interface PurchaseConfirmDialogProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface PurchaseConfirmDialogProps {
   billingCycle: string;
   onConfirm: () => void;
   isSubmitting: boolean;
+  deviceCount?: number;
 }
 
 const PurchaseConfirmDialog = ({ 
@@ -23,10 +25,17 @@ const PurchaseConfirmDialog = ({
   price, 
   billingCycle, 
   onConfirm, 
-  isSubmitting 
+  isSubmitting,
+  deviceCount = 1
 }: PurchaseConfirmDialogProps) => {
   const isHardware = billingCycle.includes('unit');
+  const isDevicePlan = billingCycle.includes('device');
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
+  
+  // Calculate costs for device plans
+  const costs = isDevicePlan 
+    ? calculateMultiDeviceCost(deviceCount, price) 
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -43,20 +52,47 @@ const PurchaseConfirmDialog = ({
             <span>Plan:</span>
             <span className="font-medium">{planName}</span>
           </div>
-          <div className="flex justify-between mb-2">
-            <span>Price:</span>
-            <span className="font-medium">{formatPrice(price)} {formatBillingCycle(billingCycle)}</span>
-          </div>
-          {monthlyEquivalent && (
-            <div className="flex justify-between">
-              <span>Monthly equivalent:</span>
-              <span>{monthlyEquivalent} per month</span>
-            </div>
+          
+          {isDevicePlan ? (
+            <>
+              <div className="flex justify-between mb-2">
+                <span>Number of devices:</span>
+                <span className="font-medium">{deviceCount}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span>Setup fee:</span>
+                <span className="font-medium">{formatPrice(costs?.setupFee || 0)}</span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span>Monthly subscription:</span>
+                <span className="font-medium">{formatPrice(costs?.monthlyPrice || 0)}/month</span>
+              </div>
+              <div className="flex justify-between border-t pt-2 mt-2">
+                <span>First payment total:</span>
+                <span className="font-bold">{formatPrice(costs?.totalFirstPayment || 0)}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between mb-2">
+                <span>Price:</span>
+                <span className="font-medium">{formatPrice(price)} {formatBillingCycle(billingCycle)}</span>
+              </div>
+              {monthlyEquivalent && (
+                <div className="flex justify-between">
+                  <span>Monthly equivalent:</span>
+                  <span>{monthlyEquivalent} per month</span>
+                </div>
+              )}
+            </>
           )}
+
           <p className="text-sm text-muted-foreground mt-4">
             {isHardware 
               ? 'Your hardware purchase request will be sent to an administrator for approval.'
-              : 'Your subscription purchase request will be sent to an administrator for approval.'}
+              : isDevicePlan
+                ? 'Your multi-device security plan request will be sent to an administrator for approval.'
+                : 'Your subscription purchase request will be sent to an administrator for approval.'}
             You will be notified once your request has been processed.
           </p>
         </div>
