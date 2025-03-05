@@ -1,187 +1,298 @@
 
-import React from 'react';
-import { Laptop, Smartphone, Tablet, AlertTriangle, Shield, MoreVertical } from 'lucide-react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Laptop, Smartphone, MoreHorizontal, AlertTriangle, Search, PlusCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
-// Mock data for devices
-const mockDevices = [
-  {
-    id: '1',
-    name: 'MacBook Pro',
-    type: 'laptop',
-    lastActive: '2 minutes ago',
-    status: 'secure',
-    securityLevel: 'maximum',
-    ipAddress: '192.168.1.105',
-    location: 'New York, USA',
-  },
-  {
-    id: '2',
-    name: 'iPhone 13',
-    type: 'smartphone',
-    lastActive: '15 minutes ago',
-    status: 'warning',
-    securityLevel: 'enhanced',
-    ipAddress: '192.168.1.110',
-    location: 'New York, USA',
-    warnings: ['Outdated OS version', 'Multiple login attempts'],
-  },
-  {
-    id: '3',
-    name: 'iPad Pro',
-    type: 'tablet',
-    lastActive: '3 hours ago',
-    status: 'risk',
-    securityLevel: 'standard',
-    ipAddress: '192.168.0.56',
-    location: 'Boston, USA',
-    warnings: ['Unencrypted connection', 'Suspicious app detected', 'Malware detected'],
-  },
-  {
-    id: '4',
-    name: 'Samsung Galaxy',
-    type: 'smartphone',
-    lastActive: '1 day ago',
-    status: 'secure',
-    securityLevel: 'enhanced',
-    ipAddress: '192.168.1.115',
-    location: 'Washington, USA',
-  },
-  {
-    id: '5',
-    name: 'Surface Pro',
-    type: 'laptop',
-    lastActive: '5 days ago',
-    status: 'warning',
-    securityLevel: 'enhanced',
-    ipAddress: '192.168.1.120',
-    location: 'Miami, USA',
-    warnings: ['Inactive for 5+ days'],
-  },
-];
+interface Device {
+  id: string;
+  type: 'ios' | 'android' | 'macbook' | 'imac' | 'tablet';
+  serial_number: string;
+  status: 'active' | 'inactive' | 'pending' | 'maintenance';
+  assigned_to: string | null;
+  configuration_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-const DeviceList = () => {
+interface DeviceListProps {
+  isAdmin?: boolean;
+}
+
+const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+  const [isWipeDialogOpen, setIsWipeDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch devices from Supabase
+  const { data: devices, isLoading, error } = useQuery({
+    queryKey: ['devices'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('devices')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Device[];
+    }
+  });
+
+  // Remote wipe mutation
+  const wipeMutation = useMutation({
+    mutationFn: async (deviceId: string) => {
+      // In a real implementation, this would make a call to an edge function
+      // that would trigger the remote wipe process
+      console.log('Triggered remote wipe for device:', deviceId);
+      
+      // Simulate API call and update status in the database
+      const { data, error } = await supabase
+        .from('devices')
+        .update({ status: 'maintenance' })
+        .eq('id', deviceId);
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success('Remote wipe initiated');
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+      setIsWipeDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to initiate remote wipe: ${error.message}`);
+    }
+  });
+
+  // Filter devices based on search
+  const filteredDevices = devices?.filter(device => 
+    device.serial_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    device.status.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const getDeviceIcon = (type: string) => {
-    switch (type) {
-      case 'laptop':
-        return <Laptop className="h-5 w-5" />;
-      case 'smartphone':
-        return <Smartphone className="h-5 w-5" />;
-      case 'tablet':
-        return <Tablet className="h-5 w-5" />;
-      default:
-        return <Laptop className="h-5 w-5" />;
+    if (type === 'ios' || type === 'android' || type === 'tablet') {
+      return <Smartphone className="h-5 w-5" />;
+    } else {
+      return <Laptop className="h-5 w-5" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'secure':
-        return <Badge className="bg-green-500 text-white">Secure</Badge>;
-      case 'warning':
-        return <Badge className="bg-amber-500 text-white">Warning</Badge>;
-      case 'risk':
-        return <Badge className="bg-red-500 text-white">At Risk</Badge>;
+      case 'active':
+        return <Badge className="bg-green-500">Active</Badge>;
+      case 'inactive':
+        return <Badge variant="outline" className="text-muted-foreground">Inactive</Badge>;
+      case 'pending':
+        return <Badge variant="outline" className="text-amber-500 border-amber-500">Pending</Badge>;
+      case 'maintenance':
+        return <Badge variant="secondary">Maintenance</Badge>;
       default:
-        return <Badge>Unknown</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
-  const getSecurityLevelBadge = (level: string) => {
-    switch (level) {
-      case 'maximum':
-        return <Badge variant="outline" className="border-green-500 text-green-500">Maximum</Badge>;
-      case 'enhanced':
-        return <Badge variant="outline" className="border-blue-500 text-blue-500">Enhanced</Badge>;
-      case 'standard':
-        return <Badge variant="outline" className="border-amber-500 text-amber-500">Standard</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
+  const handleWipeClick = (device: Device) => {
+    setSelectedDevice(device);
+    setIsWipeDialogOpen(true);
   };
 
   return (
-    <div className="glass-panel rounded-xl p-6 overflow-hidden">
-      <div className="flex justify-between items-center mb-6">
+    <div className="glass-panel rounded-xl p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
         <div>
-          <h2 className="text-xl font-display font-semibold">Registered Devices</h2>
-          <p className="text-muted-foreground">Manage and monitor your secure devices</p>
+          <h2 className="text-xl font-display font-semibold">Secured Devices</h2>
+          <p className="text-muted-foreground">Manage your protected devices</p>
         </div>
-        <Button variant="outline" className="flex items-center gap-2">
-          <Shield className="h-4 w-4" />
-          Add New Device
-        </Button>
+        <div className="flex mt-4 sm:mt-0 gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search devices..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          {isAdmin && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="button-primary">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Add Device
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Secure Device</DialogTitle>
+                  <DialogDescription>
+                    Register a new device in the SecureGuardian system.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                  <form className="space-y-4">
+                    {/* Device registration form would go here */}
+                    <p className="text-sm text-muted-foreground">
+                      This feature will be implemented in a future update.
+                    </p>
+                  </form>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline">Cancel</Button>
+                  <Button>Register Device</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-secondary/50 text-muted-foreground text-sm">
-              <th className="text-left p-3 rounded-tl-lg">Device</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3">Security Level</th>
-              <th className="text-left p-3">Last Active</th>
-              <th className="text-left p-3">Location</th>
-              <th className="text-center p-3 rounded-tr-lg">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockDevices.map((device, index) => (
-              <tr 
-                key={device.id} 
-                className={`border-t border-border hover:bg-secondary/30 ${
-                  device.status === 'risk' ? 'bg-red-500/10' : ''
-                }`}
-              >
-                <td className="p-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-                      {getDeviceIcon(device.type)}
-                    </div>
-                    <div>
-                      <div className="font-medium">{device.name}</div>
-                      <div className="text-xs text-muted-foreground">{device.ipAddress}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-3">
-                  <div className="flex items-center space-x-2">
-                    {getStatusBadge(device.status)}
-                    {device.status !== 'secure' && (
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                    )}
-                  </div>
-                  {device.warnings && (
-                    <div className="mt-1">
-                      {device.warnings.map((warning, i) => (
-                        <div key={i} className="text-xs text-red-500 flex items-center mt-1">
-                          <AlertTriangle className="h-3 w-3 mr-1" />
-                          {warning}
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : error ? (
+        <div className="rounded-md bg-destructive/20 p-4 text-center">
+          <AlertTriangle className="h-10 w-10 text-destructive mx-auto mb-2" />
+          <h3 className="font-medium">Error Loading Devices</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {(error as Error).message || 'There was an error fetching the device list.'}
+          </p>
+        </div>
+      ) : (
+        <div className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="pb-3 font-medium">Device</th>
+                  <th className="pb-3 font-medium">Serial Number</th>
+                  <th className="pb-3 font-medium">Status</th>
+                  <th className="pb-3 font-medium">Last Activity</th>
+                  <th className="pb-3 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredDevices && filteredDevices.length > 0 ? (
+                  filteredDevices.map((device) => (
+                    <tr key={device.id} className="group">
+                      <td className="py-4">
+                        <div className="flex items-center">
+                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                            {getDeviceIcon(device.type)}
+                          </div>
+                          <div>
+                            <div className="font-medium capitalize">{device.type}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {device.assigned_to || 'Unassigned'}
+                            </div>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                <td className="p-3">
-                  {getSecurityLevelBadge(device.securityLevel)}
-                </td>
-                <td className="p-3">
-                  <div className="text-sm">{device.lastActive}</div>
-                </td>
-                <td className="p-3">
-                  <div className="text-sm">{device.location}</div>
-                </td>
-                <td className="p-3 text-center">
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="h-5 w-5" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                      </td>
+                      <td className="py-4 font-mono text-sm">{device.serial_number}</td>
+                      <td className="py-4">{getStatusBadge(device.status)}</td>
+                      <td className="py-4 text-sm text-muted-foreground">
+                        {new Date(device.updated_at).toLocaleString()}
+                      </td>
+                      <td className="py-4 text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => { /* View details */ }}>
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleWipeClick(device)}
+                              className="text-red-500 focus:text-red-500"
+                            >
+                              Remote Wipe
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="py-6 text-center">
+                      {searchQuery 
+                        ? 'No devices matching your search criteria' 
+                        : 'No devices registered yet'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Remote Wipe Confirmation Dialog */}
+      <AlertDialog open={isWipeDialogOpen} onOpenChange={setIsWipeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Remote Wipe</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently erase all data on the device {selectedDevice?.serial_number}.
+              This action cannot be undone. The device will be crypto-shredded and all secure
+              data will be permanently destroyed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-destructive hover:bg-destructive/90"
+              onClick={() => selectedDevice && wipeMutation.mutate(selectedDevice.id)}
+              disabled={wipeMutation.isPending}
+            >
+              {wipeMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Initiating Wipe...
+                </>
+              ) : (
+                'Confirm Remote Wipe'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
