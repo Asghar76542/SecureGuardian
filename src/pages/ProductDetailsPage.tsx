@@ -6,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import DashboardLayout from '@/components/DashboardLayout';
 import PlanCard from '@/components/products/PlanCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Shield, Database, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Database } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProductFeature {

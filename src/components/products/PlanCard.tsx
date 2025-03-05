@@ -1,13 +1,15 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Check, ShoppingCart, Loader2 } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import PlanFeatures from './PlanFeatures';
+import PlanPricing from './PlanPricing';
+import PurchaseConfirmDialog from './PurchaseConfirmDialog';
 
 interface PlanProps {
   plan: {
@@ -30,26 +32,6 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0
-    }).format(price);
-  };
-
-  const formatBillingCycle = (cycle: string) => {
-    return 'per device/year';
-  };
-
-  const getMonthlyEquivalent = (price: number) => {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 0
-    }).format(Math.round(price / 12));
-  };
-
   const handlePurchase = async () => {
     if (!profile) {
       toast({
@@ -125,24 +107,12 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         </CardHeader>
         
         <CardContent className="pb-0 flex-grow">
-          <div className="mb-4">
-            <span className="text-3xl font-bold">{formatPrice(plan.price)}</span>
-            <span className="text-muted-foreground ml-1">{formatBillingCycle(plan.billing_cycle)}</span>
-            <div className="mt-1 text-sm text-muted-foreground">
-              (Only {getMonthlyEquivalent(plan.price)} per month, billed annually)
-            </div>
-          </div>
+          <PlanPricing 
+            price={plan.price} 
+            billingCycle={plan.billing_cycle} 
+          />
           
-          <div className="space-y-3">
-            {plan.features.map((feature, index) => (
-              <div key={index} className="flex items-start gap-2">
-                <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 flex-shrink-0">
-                  <Check className="h-3 w-3 text-primary" />
-                </div>
-                <span className="text-sm">{feature}</span>
-              </div>
-            ))}
-          </div>
+          <PlanFeatures features={plan.features} />
         </CardContent>
         
         <CardFooter className="pt-6 mt-auto">
@@ -157,45 +127,16 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         </CardFooter>
       </Card>
 
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Purchase</DialogTitle>
-            <DialogDescription>
-              You are about to request purchase of the {plan.name} plan for {productName}.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <div className="flex justify-between mb-2">
-              <span>Plan:</span>
-              <span className="font-medium">{plan.name}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Price:</span>
-              <span className="font-medium">{formatPrice(plan.price)} {formatBillingCycle(plan.billing_cycle)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Monthly equivalent:</span>
-              <span>{getMonthlyEquivalent(plan.price)} per month</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-4">
-              Your purchase request will be sent to an administrator for approval.
-              You will be notified once your request has been processed.
-            </p>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button onClick={handlePurchase} disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
-              Confirm Purchase
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PurchaseConfirmDialog 
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        planName={plan.name}
+        productName={productName}
+        price={plan.price}
+        billingCycle={plan.billing_cycle}
+        onConfirm={handlePurchase}
+        isSubmitting={isSubmitting}
+      />
     </>
   );
 };
