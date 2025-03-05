@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,21 +32,21 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
+      currency: 'GBP',
+      minimumFractionDigits: 0
     }).format(price);
   };
 
   const formatBillingCycle = (cycle: string) => {
     switch (cycle) {
       case 'monthly':
-        return 'per month';
+        return 'per device/month';
       case 'annually':
-        return 'per year';
+        return 'per device/year';
       case 'quarterly':
-        return 'per quarter';
+        return 'per device/quarter';
       default:
         return '';
     }
@@ -114,6 +115,18 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     }
   };
 
+  // Add annual savings badge text if plan is annual
+  const getAnnualSavingsBadge = () => {
+    if (plan.billing_cycle === 'annually') {
+      return (
+        <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200">
+          Save 50%
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <>
       <Card className={`overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''}`}>
@@ -132,6 +145,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           <div className="mb-4">
             <span className="text-3xl font-bold">{formatPrice(plan.price)}</span>
             <span className="text-muted-foreground ml-1">{formatBillingCycle(plan.billing_cycle)}</span>
+            {getAnnualSavingsBadge()}
           </div>
           
           <div className="space-y-3">
@@ -181,6 +195,11 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
               Your purchase request will be sent to an administrator for approval.
               You will be notified once your request has been processed.
             </p>
+            {plan.billing_cycle === 'annually' && (
+              <p className="text-sm text-green-600 mt-2">
+                Annual billing saves 50% compared to monthly pricing.
+              </p>
+            )}
           </div>
           
           <DialogFooter>

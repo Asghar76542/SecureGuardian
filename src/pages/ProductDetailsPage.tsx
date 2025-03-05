@@ -161,7 +161,9 @@ const ProductDetailsPage = () => {
       </div>
 
       <div>
-        <h2 className="text-xl font-medium mb-6">Available Plans</h2>
+        <h2 className="text-xl font-medium mb-2">Available Plans</h2>
+        <p className="text-muted-foreground mb-6">Our per-device pricing model scales with your organization</p>
+        
         {plans && plans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {plans.map(plan => (
