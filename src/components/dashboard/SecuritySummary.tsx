@@ -47,12 +47,13 @@ const SecuritySummary = () => {
         };
       }
       
+      // Ensure all numeric values are properly handled as numbers
       return {
-        total_devices: data[0].total_devices || 0,
-        active_devices: data[0].active_devices || 0,
-        devices_at_risk: data[0].devices_at_risk || 0,
-        active_threats: data[0].active_threats || 0,
-        security_score: data[0].security_score || 0,
+        total_devices: Number(data[0].total_devices) || 0,
+        active_devices: Number(data[0].active_devices) || 0,
+        devices_at_risk: Number(data[0].devices_at_risk) || 0,
+        active_threats: Number(data[0].active_threats) || 0,
+        security_score: Number(data[0].security_score) || 0,
         last_scan_time: data[0].last_scan_time,
         // Convert the interval to a string representation
         time_since_scan: data[0].time_since_scan ? String(data[0].time_since_scan) : null,
@@ -73,6 +74,9 @@ const SecuritySummary = () => {
       } else if (interval.includes('hours')) {
         const hours = parseInt(interval);
         return `${hours} hours ago`;
+      } else if (interval.includes('minutes')) {
+        const minutes = parseInt(interval);
+        return minutes <= 1 ? "Just now" : `${minutes} minutes ago`;
       } else {
         return "Recently";
       }
@@ -92,6 +96,19 @@ const SecuritySummary = () => {
     if (score >= 80) return "text-green-500";
     if (score >= 60) return "text-yellow-500";
     return "text-red-500";
+  };
+
+  // Calculate compliance status text and color
+  const getComplianceStatus = () => {
+    if (!securityStats) return { text: 'Unknown', color: 'text-gray-500' };
+    
+    if (securityStats.security_score >= 80) {
+      return { text: 'Compliant', color: 'text-green-500' };
+    } else if (securityStats.security_score >= 60) {
+      return { text: 'At Risk', color: 'text-yellow-500' };
+    } else {
+      return { text: 'Non-Compliant', color: 'text-red-500' };
+    }
   };
 
   // Use a loading state while fetching data
@@ -133,6 +150,7 @@ const SecuritySummary = () => {
   
   const securityScoreColor = getSecurityColor(stats.security_score);
   const lastScan = getLastScanText();
+  const compliance = getComplianceStatus();
 
   return (
     <div className="glass-panel rounded-xl p-6 mb-8">
@@ -217,8 +235,8 @@ const SecuritySummary = () => {
             )}
           </div>
           <div className="flex items-end">
-            <span className={`text-xl font-bold ${stats.security_score >= 80 ? 'text-green-500' : 'text-red-500'}`}>
-              {stats.security_score >= 80 ? 'Compliant' : 'Non-Compliant'}
+            <span className={`text-xl font-bold ${compliance.color}`}>
+              {compliance.text}
             </span>
           </div>
           <div className="text-xs text-muted-foreground mt-2">
@@ -233,4 +251,3 @@ const SecuritySummary = () => {
 };
 
 export default SecuritySummary;
-
