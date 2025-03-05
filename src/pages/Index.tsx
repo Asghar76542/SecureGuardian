@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import UserGroups from "@/components/UserGroups";
 import SecurityMeasures from "@/components/SecurityMeasures";
+import EmergencyProtocols from "@/components/EmergencyProtocols";
 import RequestDemo from "@/components/RequestDemo";
 import Footer from "@/components/Footer";
 
@@ -14,8 +15,9 @@ const Index = () => {
       <main>
         <Hero />
         <Features />
-        <UserGroups />
         <SecurityMeasures />
+        <UserGroups />
+        <EmergencyProtocols />
         <RequestDemo />
       </main>
       <Footer />

@@ -20,7 +20,7 @@ const Hero = () => {
           <span>Defense-Grade Security</span>
         </div>
         
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold max-w-5xl mx-auto leading-tight animate-fade-in">
+        <h1 className="text-4xl md:text-5xl lg:text-7xl font-display font-bold max-w-5xl mx-auto leading-tight animate-fade-in">
           Secure Mobile Solutions For Those Who Guard The World's Secrets
         </h1>
         
@@ -37,7 +37,7 @@ const Hero = () => {
           </Button>
         </div>
         
-        <div className="pt-8 mt-8 border-t border-border/30 w-full max-w-3xl animate-fade-in animation-delay-600">
+        <div className="pt-10 mt-10 border-t border-border/30 w-full max-w-3xl animate-fade-in animation-delay-600">
           <p className="text-sm text-muted-foreground mb-6">Trusted by leading organizations worldwide</p>
           <div className="flex flex-wrap justify-center gap-8 grayscale opacity-70">
             <div className="h-8 w-24 bg-foreground/70 rounded-md"></div>
