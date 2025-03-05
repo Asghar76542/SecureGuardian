@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
 import ProductCard from '@/components/products/ProductCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Database, Loader2 } from 'lucide-react';
+import { Shield, Database, Loader2, Lock, Package } from 'lucide-react';
 
 interface ProductFeature {
   name: string;
@@ -67,6 +67,10 @@ const ProductsPage = () => {
             <Database className="h-4 w-4" />
             <span>Infrastructure Solutions</span>
           </TabsTrigger>
+          <TabsTrigger value="hardware" className="flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            <span>Security Hardware</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="mt-4">
@@ -125,6 +129,28 @@ const ProductsPage = () => {
           ) : filteredProducts?.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               No infrastructure products available at the moment.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredProducts?.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="hardware" className="mt-4">
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="p-4 text-center text-destructive">
+              An error occurred while loading products. Please try again.
+            </div>
+          ) : filteredProducts?.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              No hardware products available at the moment.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

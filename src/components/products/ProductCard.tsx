@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Database, ArrowRight } from 'lucide-react';
+import { Shield, Database, ArrowRight, Lock, Package, Key, Tag } from 'lucide-react';
 
 interface ProductFeature {
   name: string;
@@ -29,6 +29,16 @@ const ProductCard = ({ product }: ProductProps) => {
         return <Shield className="h-6 w-6 text-primary" />;
       case 'infrastructure':
         return <Database className="h-6 w-6 text-primary" />;
+      case 'hardware':
+        if (product.name.toLowerCase().includes('yubi')) {
+          return <Key className="h-6 w-6 text-primary" />;
+        } else if (product.name.toLowerCase().includes('faraday')) {
+          return <Package className="h-6 w-6 text-primary" />;
+        } else if (product.name.toLowerCase().includes('tag')) {
+          return <Tag className="h-6 w-6 text-primary" />;
+        } else {
+          return <Lock className="h-6 w-6 text-primary" />;
+        }
       default:
         return null;
     }

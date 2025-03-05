@@ -11,11 +11,22 @@ export const formatPrice = (price: number) => {
   }).format(price);
 };
 
-export const formatBillingCycle = () => {
-  return 'per device/year';
+export const formatBillingCycle = (billingCycle?: string) => {
+  if (billingCycle && billingCycle.includes('device')) {
+    return 'per device';
+  } else if (billingCycle && billingCycle.includes('unit')) {
+    return 'per unit';
+  } else {
+    return 'per device/year';
+  }
 };
 
-export const getMonthlyEquivalent = (price: number) => {
+export const getMonthlyEquivalent = (price: number, billingCycle?: string) => {
+  // If it's a hardware product that's billed per unit, just return the price
+  if (billingCycle && (billingCycle.includes('device') || billingCycle.includes('unit'))) {
+    return null;
+  }
+  
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',

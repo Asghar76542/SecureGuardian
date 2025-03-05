@@ -25,6 +25,9 @@ const PurchaseConfirmDialog = ({
   onConfirm, 
   isSubmitting 
 }: PurchaseConfirmDialogProps) => {
+  const isHardware = billingCycle.includes('device') || billingCycle.includes('unit');
+  const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -42,14 +45,18 @@ const PurchaseConfirmDialog = ({
           </div>
           <div className="flex justify-between mb-2">
             <span>Price:</span>
-            <span className="font-medium">{formatPrice(price)} {formatBillingCycle()}</span>
+            <span className="font-medium">{formatPrice(price)} {formatBillingCycle(billingCycle)}</span>
           </div>
-          <div className="flex justify-between">
-            <span>Monthly equivalent:</span>
-            <span>{getMonthlyEquivalent(price)} per month</span>
-          </div>
+          {monthlyEquivalent && (
+            <div className="flex justify-between">
+              <span>Monthly equivalent:</span>
+              <span>{monthlyEquivalent} per month</span>
+            </div>
+          )}
           <p className="text-sm text-muted-foreground mt-4">
-            Your purchase request will be sent to an administrator for approval.
+            {isHardware 
+              ? 'Your hardware purchase request will be sent to an administrator for approval.'
+              : 'Your purchase request will be sent to an administrator for approval.'}
             You will be notified once your request has been processed.
           </p>
         </div>

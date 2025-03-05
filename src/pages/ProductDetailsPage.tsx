@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -6,7 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import DashboardLayout from '@/components/DashboardLayout';
 import PlanCard from '@/components/products/PlanCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Shield, Database } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProductFeature {
@@ -94,6 +95,16 @@ const ProductDetailsPage = () => {
         return <Shield className="h-6 w-6 text-primary" />;
       case 'infrastructure':
         return <Database className="h-6 w-6 text-primary" />;
+      case 'hardware':
+        if (product.name.toLowerCase().includes('yubi')) {
+          return <Key className="h-6 w-6 text-primary" />;
+        } else if (product.name.toLowerCase().includes('faraday')) {
+          return <Package className="h-6 w-6 text-primary" />;
+        } else if (product.name.toLowerCase().includes('tag')) {
+          return <Tag className="h-6 w-6 text-primary" />;
+        } else {
+          return <Lock className="h-6 w-6 text-primary" />;
+        }
       default:
         return null;
     }
@@ -159,7 +170,9 @@ const ProductDetailsPage = () => {
       <div>
         <h2 className="text-xl font-medium mb-2">Available Plans</h2>
         <p className="text-muted-foreground mb-6">
-          Enterprise-grade security with simple annual billing
+          {product.type === 'hardware' 
+            ? 'Enterprise-grade security hardware with simple procurement options' 
+            : 'Enterprise-grade security with simple annual billing'}
         </p>
         
         {plans && plans.length > 0 ? (
