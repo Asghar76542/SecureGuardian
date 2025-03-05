@@ -9,13 +9,14 @@ import UserManagement from '@/components/dashboard/admin/UserManagement';
 import UserApprovals from '@/components/dashboard/admin/UserApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks, ShoppingCart } from 'lucide-react';
+import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks, ShoppingCart, Users2 } from 'lucide-react';
 import GlobalThreatMonitor from '@/components/dashboard/admin/GlobalThreatMonitor';
 import ComplianceControls from '@/components/dashboard/admin/ComplianceControls';
 import SystemLogs from '@/components/dashboard/admin/SystemLogs';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import CustomerManagement from '@/components/dashboard/admin/CustomerManagement';
 
 const AdminDashboard = () => {
   const { profile } = useAuth();
@@ -115,6 +116,10 @@ const AdminDashboard = () => {
                 <UserCheck className="h-4 w-4" />
                 <span>User Approvals</span>
               </TabsTrigger>
+              <TabsTrigger value="customers" className="flex items-center gap-2">
+                <Users2 className="h-4 w-4" />
+                <span>Customer Management</span>
+              </TabsTrigger>
               <TabsTrigger value="compliance" className="flex items-center gap-2">
                 <ListChecks className="h-4 w-4" />
                 <span>Compliance</span>
@@ -131,6 +136,10 @@ const AdminDashboard = () => {
             
             <TabsContent value="approvals">
               <UserApprovals />
+            </TabsContent>
+            
+            <TabsContent value="customers">
+              <CustomerManagement />
             </TabsContent>
             
             <TabsContent value="compliance">
@@ -153,6 +162,7 @@ const AdminDashboard = () => {
   const getSystemTab = () => {
     if (location.pathname.includes('/admin/users')) return 'users';
     if (location.pathname.includes('/admin/approvals')) return 'approvals';
+    if (location.pathname.includes('/admin/customers')) return 'customers';
     if (location.pathname.includes('/admin/audit')) return 'compliance';
     if (location.pathname.includes('/admin/logs')) return 'logs';
     return 'users'; // Default
