@@ -13,6 +13,8 @@ import Register from "./pages/Register";
 import PendingApproval from "./pages/PendingApproval";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Settings from "./pages/Settings";
+import DeviceManager from "./pages/DeviceManager";
 import NotFound from "./pages/NotFound";
 
 // Define the query client
@@ -38,6 +40,16 @@ const App = () => (
             <Route path="/admin" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
+            <Route path="/devices/:deviceId" element={
+              <ProtectedRoute>
+                <DeviceManager />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
