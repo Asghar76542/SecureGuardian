@@ -34,15 +34,20 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
+// Define the types explicitly to match the database schema
+type DeviceStatus = 'active' | 'inactive' | 'pending' | 'maintenance';
+type DeviceType = 'ios' | 'android' | 'macbook' | 'imac' | 'tablet' | 'windows';
+
 interface Device {
   id: string;
-  type: 'ios' | 'android' | 'macbook' | 'imac' | 'tablet' | string;
+  type: DeviceType;
   serial_number: string;
-  status: 'active' | 'inactive' | 'pending' | 'maintenance' | string;
+  status: DeviceStatus;
   assigned_to: string | null;
   configuration_id: string | null;
   created_at: string;
   updated_at: string;
+  org_id?: string;
 }
 
 interface DeviceListProps {
@@ -53,6 +58,7 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [isWipeDialogOpen, setIsWipeDialogOpen] = useState(false);
+  const [isAddDeviceDialogOpen, setIsAddDeviceDialogOpen] = useState(false);
   const queryClient = useQueryClient();
   const { profile } = useAuth();
 
@@ -84,7 +90,7 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
       // Update status in the database
       const { data, error } = await supabase
         .from('devices')
-        .update({ status: 'maintenance' })
+        .update({ status: 'maintenance' as DeviceStatus })
         .eq('id', deviceId);
       
       if (error) throw error;
@@ -97,6 +103,29 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
     },
     onError: (error) => {
       toast.error(`Failed to initiate remote wipe: ${error.message}`);
+    }
+  });
+
+  // Add device mutation
+  const addDeviceMutation = useMutation({
+    mutationFn: async (newDevice: {
+      type: DeviceType;
+      serial_number: string;
+      status: DeviceStatus;
+      org_id: string | undefined;
+    }) => {
+      const { error } = await supabase.from('devices').insert([newDevice]);
+      
+      if (error) throw error;
+      return true;
+    },
+    onSuccess: () => {
+      toast.success('Device added successfully');
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+      setIsAddDeviceDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`Failed to add device: ${error.message}`);
     }
   });
 
@@ -137,23 +166,20 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
 
   // Handle adding a new device
   const handleAddDevice = async (formData: FormData) => {
-    const newDevice = {
-      type: formData.get('type') as string,
-      serial_number: formData.get('serialNumber') as string,
-      status: 'pending',
-      org_id: profile?.org_id,
-    };
-
-    try {
-      const { error } = await supabase.from('devices').insert([newDevice]);
-      
-      if (error) throw error;
-      
-      toast.success('Device added successfully');
-      queryClient.invalidateQueries({ queryKey: ['devices'] });
-    } catch (error) {
-      toast.error(`Failed to add device: ${(error as Error).message}`);
+    const deviceType = formData.get('type') as string;
+    const serialNumber = formData.get('serialNumber') as string;
+    
+    if (!deviceType || !serialNumber) {
+      toast.error('Device type and serial number are required');
+      return;
     }
+
+    addDeviceMutation.mutate({
+      type: deviceType as DeviceType,
+      serial_number: serialNumber,
+      status: 'pending' as DeviceStatus,
+      org_id: profile?.org_id
+    });
   };
 
   return (
@@ -174,7 +200,7 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
             />
           </div>
           {isAdmin && (
-            <Dialog>
+            <Dialog open={isAddDeviceDialogOpen} onOpenChange={setIsAddDeviceDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="button-primary">
                   <PlusCircle className="h-4 w-4 mr-2" />
@@ -188,7 +214,11 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
                     Register a new device in the SecureGuardian system.
                   </DialogDescription>
                 </DialogHeader>
-                <form action={handleAddDevice} className="space-y-4 py-4">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAddDevice(new FormData(e.target as HTMLFormElement));
+                }} 
+                className="space-y-4 py-4">
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <label htmlFor="deviceType" className="text-sm font-medium">
@@ -222,10 +252,22 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" type="button" onClick={() => document.querySelector('dialog')?.close()}>
+                    <Button variant="outline" type="button" onClick={() => setIsAddDeviceDialogOpen(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit">Register Device</Button>
+                    <Button 
+                      type="submit"
+                      disabled={addDeviceMutation.isPending}
+                    >
+                      {addDeviceMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Registering...
+                        </>
+                      ) : (
+                        'Register Device'
+                      )}
+                    </Button>
                   </DialogFooter>
                 </form>
               </DialogContent>
