@@ -34,9 +34,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
-// Define the types explicitly to match the database schema
+// Define the types to match exactly what the database expects
 type DeviceStatus = 'active' | 'inactive' | 'pending' | 'maintenance';
-type DeviceType = 'ios' | 'android' | 'macbook' | 'imac' | 'tablet' | 'windows';
+// Modified to remove 'windows' which is not in the database schema
+type DeviceType = 'ios' | 'android' | 'macbook' | 'imac' | 'tablet';
 
 interface Device {
   id: string;
@@ -114,7 +115,8 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
       status: DeviceStatus;
       org_id: string | undefined;
     }) => {
-      const { error } = await supabase.from('devices').insert([newDevice]);
+      // Important: We need to pass a single object here, not an array
+      const { error } = await supabase.from('devices').insert(newDevice);
       
       if (error) throw error;
       return true;
@@ -165,12 +167,18 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
   };
 
   // Handle adding a new device
-  const handleAddDevice = async (formData: FormData) => {
+  const handleAddDevice = (formData: FormData) => {
     const deviceType = formData.get('type') as string;
     const serialNumber = formData.get('serialNumber') as string;
     
     if (!deviceType || !serialNumber) {
       toast.error('Device type and serial number are required');
+      return;
+    }
+
+    // Validate the device type against our allowed types
+    if (!isValidDeviceType(deviceType)) {
+      toast.error('Invalid device type selected');
       return;
     }
 
@@ -180,6 +188,11 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
       status: 'pending' as DeviceStatus,
       org_id: profile?.org_id
     });
+  };
+
+  // Helper function to validate device type
+  const isValidDeviceType = (type: string): type is DeviceType => {
+    return ['ios', 'android', 'macbook', 'imac', 'tablet'].includes(type);
   };
 
   return (
@@ -214,11 +227,13 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
                     Register a new device in the SecureGuardian system.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddDevice(new FormData(e.target as HTMLFormElement));
-                }} 
-                className="space-y-4 py-4">
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAddDevice(new FormData(e.target as HTMLFormElement));
+                  }} 
+                  className="space-y-4 py-4"
+                >
                   <div className="grid gap-4">
                     <div className="space-y-2">
                       <label htmlFor="deviceType" className="text-sm font-medium">
@@ -236,7 +251,6 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
                         <option value="macbook">MacBook</option>
                         <option value="imac">iMac</option>
                         <option value="tablet">Tablet</option>
-                        <option value="windows">Windows PC</option>
                       </select>
                     </div>
                     <div className="space-y-2">
