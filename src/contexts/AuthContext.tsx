@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,6 +13,7 @@ interface UserProfile {
   full_name: string;
   role: UserRole;
   approval_status: ApprovalStatus;
+  org_id?: string; // Add optional org_id property
 }
 
 interface AuthContextType {
