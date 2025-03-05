@@ -1,14 +1,15 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import PlanFeatures from './PlanFeatures';
 import PlanPricing from './PlanPricing';
 import PurchaseConfirmDialog from './PurchaseConfirmDialog';
+import PlanCardHeader from './PlanCardHeader';
+import PlanCardFooter from './PlanCardFooter';
 import { 
   calculateMultiDeviceCost, 
   calculateHardwareCost, 
@@ -39,14 +40,9 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [itemCount, setItemCount] = useState(1);
   
-  console.log('PlanCard - billing_cycle:', plan.billing_cycle);
-  
   const devicePlan = isDevicePlan(plan.billing_cycle);
   const hardwareProduct = isHardwareProduct(plan.billing_cycle);
   const isSecuritySuite = productName.includes("Security Suite");
-  
-  console.log('PlanCard - isDevicePlan:', devicePlan);
-  console.log('PlanCard - isHardwareProduct:', hardwareProduct);
   
   // Get pricing details for device-based plans
   const deviceCosts = devicePlan 
@@ -71,10 +67,10 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
+      // Calculate order details based on product type
       let orderAmount = plan.price;
       let orderNotes = null;
       
-      // Calculate order amount based on product type
       if (devicePlan && deviceCosts) {
         orderAmount = deviceCosts.totalFirstPayment;
         orderNotes = JSON.stringify({
@@ -90,33 +86,8 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
         });
       }
       
-      const { data, error } = await supabase
-        .from('purchase_orders')
-        .insert({
-          user_id: profile.id,
-          ...(profile.org_id && { org_id: profile.org_id }),
-          product_plan_id: plan.id,
-          amount: orderAmount,
-          billing_cycle: plan.billing_cycle,
-          ...(orderNotes && { notes: orderNotes })
-        })
-        .select()
-        .single();
-        
-      if (error) throw error;
-      
-      const { error: itemError } = await supabase
-        .from('purchase_order_items')
-        .insert({
-          purchase_order_id: data.id,
-          product_id: plan.product_id,
-          product_plan_id: plan.id,
-          quantity: devicePlan || hardwareProduct ? itemCount : 1,
-          unit_price: plan.price,
-          total_price: orderAmount
-        });
-        
-      if (itemError) throw itemError;
+      // Create purchase order
+      await createPurchaseOrder(orderAmount, orderNotes);
       
       toast({
         title: "Order Submitted",
@@ -138,27 +109,54 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
     }
   };
 
+  // Helper function to create purchase order
+  const createPurchaseOrder = async (orderAmount: number, orderNotes: string | null) => {
+    // Create the purchase order record
+    const { data, error } = await supabase
+      .from('purchase_orders')
+      .insert({
+        user_id: profile!.id,
+        ...(profile!.org_id && { org_id: profile!.org_id }),
+        product_plan_id: plan.id,
+        amount: orderAmount,
+        billing_cycle: plan.billing_cycle,
+        ...(orderNotes && { notes: orderNotes })
+      })
+      .select()
+      .single();
+      
+    if (error) throw error;
+    
+    // Create the purchase order item
+    const { error: itemError } = await supabase
+      .from('purchase_order_items')
+      .insert({
+        purchase_order_id: data.id,
+        product_id: plan.product_id,
+        product_plan_id: plan.id,
+        quantity: devicePlan || hardwareProduct ? itemCount : 1,
+        unit_price: plan.price,
+        total_price: orderAmount
+      });
+      
+    if (itemError) throw itemError;
+  };
+
   const handleItemCountChange = (count: number) => {
-    console.log('Item count changed to:', count);
     setItemCount(count);
   };
 
-  // Additional classes for security suite plan cards to make them more prominent
+  // Card classes for styling
   const cardClasses = `overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''} ${isSecuritySuite ? 'shadow-md' : ''}`;
 
   return (
     <>
       <Card className={cardClasses}>
-        {plan.is_popular && (
-          <div className="bg-primary text-primary-foreground text-center py-1 text-sm font-medium">
-            Most Popular
-          </div>
-        )}
-        
-        <CardHeader className={`pb-2 ${plan.is_popular ? 'pt-4' : ''}`}>
-          <CardTitle>{plan.name}</CardTitle>
-          <CardDescription>{plan.description}</CardDescription>
-        </CardHeader>
+        <PlanCardHeader 
+          name={plan.name}
+          description={plan.description}
+          isPopular={plan.is_popular}
+        />
         
         <CardContent className="pb-0 flex-grow">
           <PlanPricing 
@@ -170,16 +168,10 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
           <PlanFeatures features={plan.features} productType={productType} />
         </CardContent>
         
-        <CardFooter className="pt-6 mt-auto">
-          <Button 
-            className="w-full"
-            variant={plan.is_popular ? "default" : "outline"}
-            onClick={() => setShowConfirmDialog(true)}
-          >
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Purchase
-          </Button>
-        </CardFooter>
+        <PlanCardFooter 
+          isPopular={plan.is_popular}
+          onPurchaseClick={() => setShowConfirmDialog(true)}
+        />
       </Card>
 
       <PurchaseConfirmDialog 
