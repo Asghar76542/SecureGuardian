@@ -13,6 +13,7 @@ import PendingApproval from "./pages/PendingApproval";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
+// Define the query client
 const queryClient = new QueryClient();
 
 const App = () => (
