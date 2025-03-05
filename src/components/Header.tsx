@@ -56,7 +56,7 @@ const Header = () => {
             className="bg-white text-black hover:bg-white/90 text-sm"
             onClick={() => navigate('/auth/register')}
           >
-            Request Demo
+            Sign Up
           </Button>
         </div>
         
@@ -116,7 +116,7 @@ const Header = () => {
                 className="bg-white text-black hover:bg-white/90 w-full"
                 onClick={() => navigate('/auth/register')}
               >
-                Request Demo
+                Sign Up
               </Button>
             </div>
           </div>

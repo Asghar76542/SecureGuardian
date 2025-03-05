@@ -2,9 +2,11 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle, Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   const [imageLoaded, setImageLoaded] = useState(false);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const img = new Image();
@@ -34,11 +36,20 @@ const Hero = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-5 mb-12">
-              <Button size="lg" className="button-primary text-base px-8 py-6 rounded-md shadow-glow hover:shadow-glow-intense transition-all">
-                Get Started <ArrowRight className="ml-2 h-5 w-5" />
+              <Button 
+                size="lg" 
+                className="button-primary text-base px-8 py-6 rounded-md shadow-glow hover:shadow-glow-intense transition-all"
+                onClick={() => navigate('/auth/register')}
+              >
+                Sign Up <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" className="button-secondary text-base px-8 py-6 rounded-md border-primary/30 hover:bg-primary/10">
-                View Demo
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="button-secondary text-base px-8 py-6 rounded-md border-primary/30 hover:bg-primary/10"
+                onClick={() => navigate('/auth')}
+              >
+                Login
               </Button>
             </div>
             

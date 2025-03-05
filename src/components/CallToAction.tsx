@@ -1,8 +1,11 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CallToAction = () => {
+  const navigate = useNavigate();
+  
   return (
     <section className="relative py-24 mt-12">
       <div className="max-w-5xl mx-auto px-6 text-center">
@@ -16,11 +19,18 @@ const CallToAction = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-5 justify-center mb-8">
-            <Button className="button-primary text-base px-8 py-6 rounded-md shadow-glow hover:shadow-glow-intense transition-all">
-              Request a Demo <ArrowRight className="ml-2 h-5 w-5" />
+            <Button 
+              className="button-primary text-base px-8 py-6 rounded-md shadow-glow hover:shadow-glow-intense transition-all"
+              onClick={() => navigate('/auth/register')}
+            >
+              Sign Up <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button variant="outline" className="button-secondary text-base px-8 py-6 rounded-md border-primary/30 hover:bg-primary/10">
-              Contact Sales
+            <Button 
+              variant="outline" 
+              className="button-secondary text-base px-8 py-6 rounded-md border-primary/30 hover:bg-primary/10"
+              onClick={() => navigate('/auth')}
+            >
+              Login
             </Button>
           </div>
           
