@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -33,7 +34,7 @@ interface PurchaseOrder {
   };
   organization: {
     name: string;
-  };
+  } | null;
   product_plan: {
     name: string;
     product: {
@@ -43,6 +44,7 @@ interface PurchaseOrder {
 }
 
 const PurchaseOrdersPage = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
@@ -72,7 +74,7 @@ const PurchaseOrdersPage = () => {
         .order('created_at', { ascending: false });
         
       if (error) throw error;
-      return data as PurchaseOrder[];
+      return data as unknown as PurchaseOrder[];
     }
   });
 

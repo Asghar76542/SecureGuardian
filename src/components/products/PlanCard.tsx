@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, ShoppingCart } from 'lucide-react';
+import { Check, ShoppingCart, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -70,7 +70,8 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         .from('purchase_orders')
         .insert({
           user_id: profile.id,
-          org_id: profile.org_id,
+          // Only use org_id if it exists in the profile
+          ...(profile.org_id && { org_id: profile.org_id }),
           product_plan_id: plan.id,
           amount: plan.price,
           billing_cycle: plan.billing_cycle

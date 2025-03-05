@@ -10,15 +10,17 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2, Shield, Database, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
+interface ProductFeature {
+  name: string;
+  description: string;
+}
+
 interface Product {
   id: string;
   name: string;
   description: string;
   type: string;
-  features: Array<{
-    name: string;
-    description: string;
-  }>;
+  features: ProductFeature[];
 }
 
 interface Plan {
@@ -55,7 +57,12 @@ const ProductDetailsPage = () => {
         .single();
         
       if (error) throw error;
-      return data as Product;
+      
+      // Transform the data to match our Product interface
+      return {
+        ...data,
+        features: data.features as unknown as ProductFeature[]
+      } as Product;
     },
     enabled: !!productId
   });

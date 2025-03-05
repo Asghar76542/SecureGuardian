@@ -7,15 +7,17 @@ import ProductCard from '@/components/products/ProductCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Database, Loader2 } from 'lucide-react';
 
+interface ProductFeature {
+  name: string;
+  description: string;
+}
+
 interface Product {
   id: string;
   name: string;
   description: string;
   type: string;
-  features: Array<{
-    name: string;
-    description: string;
-  }>;
+  features: ProductFeature[];
 }
 
 const ProductsPage = () => {
@@ -30,7 +32,12 @@ const ProductsPage = () => {
         .eq('is_active', true);
         
       if (error) throw error;
-      return data as Product[];
+      
+      // Transform the data to match our Product interface
+      return data.map(product => ({
+        ...product,
+        features: product.features as unknown as ProductFeature[]
+      })) as Product[];
     }
   });
 
