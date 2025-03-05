@@ -1,9 +1,12 @@
 
-import React, { useState } from 'react';
-import { AlertTriangle, Info, Calendar, ExternalLink, Filter, ChevronsUpDown, Search } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { AlertTriangle, Info, Calendar, ExternalLink, Filter, ChevronsUpDown, Search, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,81 +16,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-// Mock data for threats
-const allThreats = [
-  {
-    id: '1',
-    title: 'Phishing Campaign Targeting Government Employees',
-    description: 'New sophisticated phishing emails impersonating IT department requesting password resets.',
-    severity: 'high',
-    date: '2023-11-10T14:30:00Z',
-    source: 'CISA',
-    link: '#',
-  },
-  {
-    id: '2',
-    title: 'Zero-day Vulnerability in VPN Software',
-    description: 'Critical vulnerability discovered in Enterprise VPN solution allowing remote code execution.',
-    severity: 'critical',
-    date: '2023-11-09T09:15:00Z',
-    source: 'NCSC',
-    link: '#',
-  },
-  {
-    id: '3',
-    title: 'DDoS Attack Against Financial Institutions',
-    description: 'Multiple financial institutions reporting distributed denial of service attacks.',
-    severity: 'medium',
-    date: '2023-11-07T18:45:00Z',
-    source: 'FS-ISAC',
-    link: '#',
-  },
-  {
-    id: '4',
-    title: 'New Ransomware Variant Detected',
-    description: 'Ransomware utilizing novel encryption method and targeting healthcare organizations.',
-    severity: 'high',
-    date: '2023-11-05T11:20:00Z',
-    source: 'FBI',
-    link: '#',
-  },
-  {
-    id: '5',
-    title: 'Bluetooth Protocol Vulnerability',
-    description: 'Security researchers have identified a vulnerability in Bluetooth protocol affecting mobile devices.',
-    severity: 'medium',
-    date: '2023-11-02T16:10:00Z',
-    source: 'CERT',
-    link: '#',
-  },
-  {
-    id: '6',
-    title: 'Advanced Persistent Threat Group Targeting Defense Contractors',
-    description: 'APT group using spear-phishing techniques to target defense industry employees.',
-    severity: 'critical',
-    date: '2023-10-30T13:25:00Z',
-    source: 'FBI',
-    link: '#',
-  },
-  {
-    id: '7',
-    title: 'Supply Chain Compromise Affecting Software Libraries',
-    description: 'Malicious code inserted into popular open-source libraries used in government applications.',
-    severity: 'high',
-    date: '2023-10-28T09:40:00Z',
-    source: 'CISA',
-    link: '#',
-  },
-  {
-    id: '8',
-    title: 'Credential Stuffing Attacks on Government Portals',
-    description: 'Increased credential stuffing attempts observed against multiple government web portals.',
-    severity: 'medium',
-    date: '2023-10-25T15:15:00Z',
-    source: 'NCSC',
-    link: '#',
-  },
-];
+interface Threat {
+  id: string;
+  title: string;
+  description: string;
+  severity: string;
+  date: string;
+  source: string;
+  link: string;
+}
 
 // Format date to a readable format
 const formatDate = (dateString: string) => {
@@ -109,6 +46,33 @@ const ThreatFeed = ({ showAllThreats = false }: ThreatFeedProps) => {
   const [severityFilter, setSeverityFilter] = useState<string[]>([]);
   const [sourceFilter, setSourceFilter] = useState<string[]>([]);
 
+  // Fetch threats from the security_incidents table
+  const { data: threats, isLoading, error } = useQuery({
+    queryKey: ['security-incidents'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('security_incidents')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        toast.error(`Error fetching threats: ${error.message}`);
+        throw error;
+      }
+      
+      // Transform the data to match our Threat interface
+      return (data || []).map(incident => ({
+        id: incident.id,
+        title: incident.description,
+        description: incident.resolution || 'No additional details available.',
+        severity: incident.severity,
+        date: incident.created_at,
+        source: incident.type,
+        link: '#',
+      })) as Threat[];
+    }
+  });
+
   const getSeverityBadge = (severity: string) => {
     switch (severity) {
       case 'critical':
@@ -125,25 +89,52 @@ const ThreatFeed = ({ showAllThreats = false }: ThreatFeedProps) => {
   };
 
   // Filter and limit threats based on search, filters, and showAllThreats
-  const filteredThreats = allThreats
-    .filter(threat => {
-      const matchesSearch = 
-        threat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        threat.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        threat.source.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesSeverity = severityFilter.length === 0 || 
-        severityFilter.includes(threat.severity);
-      
-      const matchesSource = sourceFilter.length === 0 || 
-        sourceFilter.includes(threat.source);
-      
-      return matchesSearch && matchesSeverity && matchesSource;
-    })
-    .slice(0, showAllThreats ? undefined : 5);
+  const filteredThreats = threats
+    ? threats.filter(threat => {
+        const matchesSearch = 
+          threat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          threat.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          threat.source.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesSeverity = severityFilter.length === 0 || 
+          severityFilter.includes(threat.severity);
+        
+        const matchesSource = sourceFilter.length === 0 || 
+          sourceFilter.includes(threat.source);
+        
+        return matchesSearch && matchesSeverity && matchesSource;
+      })
+      .slice(0, showAllThreats ? undefined : 5)
+    : [];
 
   // Get unique sources for filter
-  const sources = [...new Set(allThreats.map(threat => threat.source))];
+  const sources = threats 
+    ? [...new Set(threats.map(threat => threat.source))]
+    : [];
+
+  if (isLoading) {
+    return (
+      <div className="glass-panel rounded-xl p-6">
+        <div className="flex justify-center items-center h-40">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="glass-panel rounded-xl p-6">
+        <div className="text-center py-6 border border-dashed border-border rounded-lg">
+          <AlertTriangle className="h-10 w-10 mx-auto mb-2 text-destructive" />
+          <h3 className="font-medium">Error Loading Threat Data</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            {(error as Error).message || 'Failed to load threat intelligence data.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="glass-panel rounded-xl p-6">
@@ -299,7 +290,9 @@ const ThreatFeed = ({ showAllThreats = false }: ThreatFeedProps) => {
             <AlertTriangle className="h-10 w-10 mx-auto mb-2 text-muted-foreground" />
             <h3 className="font-medium">No Threats Found</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              No threats matching your search criteria
+              {searchQuery || severityFilter.length > 0 || sourceFilter.length > 0 
+                ? 'No threats matching your search criteria'
+                : 'No security threats detected at this time'}
             </p>
           </div>
         )}

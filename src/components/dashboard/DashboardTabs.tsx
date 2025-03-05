@@ -7,9 +7,10 @@ import ThreatFeed from './ThreatFeed';
 
 interface DashboardTabsProps {
   path: string;
+  isAdmin?: boolean;
 }
 
-const DashboardTabs: React.FC<DashboardTabsProps> = ({ path }) => {
+const DashboardTabs: React.FC<DashboardTabsProps> = ({ path, isAdmin = false }) => {
   // Main Dashboard Overview
   if (path === '/dashboard' || path === '/dashboard/') {
     return (
@@ -28,7 +29,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ path }) => {
         <TabsContent value="overview">
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
             <div className="xl:col-span-2">
-              <DeviceList />
+              <DeviceList isAdmin={isAdmin} />
             </div>
             <div>
               <ThreatFeed />
@@ -62,14 +63,13 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ path }) => {
         </TabsList>
 
         <TabsContent value="all-devices">
-          <DeviceList />
+          <DeviceList isAdmin={isAdmin} />
         </TabsContent>
         
         <TabsContent value="pending">
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">Devices Pending Approval</h3>
-            <p>Review new device registrations waiting for your authorization.</p>
-          </div>
+          <DeviceList 
+            isAdmin={isAdmin} 
+          />
         </TabsContent>
       </Tabs>
     );
@@ -105,10 +105,7 @@ const DashboardTabs: React.FC<DashboardTabsProps> = ({ path }) => {
         </TabsContent>
         
         <TabsContent value="intelligence">
-          <div className="p-6 border rounded-lg">
-            <h3 className="text-xl font-semibold mb-4">Threat Intelligence</h3>
-            <p>Comprehensive analysis of security threats and vulnerabilities.</p>
-          </div>
+          <ThreatFeed showAllThreats={true} />
         </TabsContent>
       </Tabs>
     );

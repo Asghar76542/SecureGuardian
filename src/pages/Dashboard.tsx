@@ -10,12 +10,15 @@ import { useAuth } from '@/contexts/AuthContext';
 const Dashboard = () => {
   const { profile } = useAuth();
   const location = useLocation();
+  
+  // Check if user is admin
+  const isAdmin = profile?.role === 'admin';
 
   return (
     <DashboardLayout>
       <DashboardHeader pathname={location.pathname} profile={profile} />
       <SecuritySummary />
-      <DashboardTabs path={location.pathname} />
+      <DashboardTabs path={location.pathname} isAdmin={isAdmin} />
     </DashboardLayout>
   );
 };

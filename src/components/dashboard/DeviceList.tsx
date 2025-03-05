@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Laptop, Smartphone, MoreHorizontal, AlertTriangle, Search, PlusCircle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,9 +36,9 @@ import { toast } from 'sonner';
 
 interface Device {
   id: string;
-  type: 'ios' | 'android' | 'macbook' | 'imac' | 'tablet';
+  type: 'ios' | 'android' | 'macbook' | 'imac' | 'tablet' | string;
   serial_number: string;
-  status: 'active' | 'inactive' | 'pending' | 'maintenance';
+  status: 'active' | 'inactive' | 'pending' | 'maintenance' | string;
   assigned_to: string | null;
   configuration_id: string | null;
   created_at: string;
@@ -53,15 +54,20 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
   const [isWipeDialogOpen, setIsWipeDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
 
   // Fetch devices from Supabase
   const { data: devices, isLoading, error } = useQuery({
     queryKey: ['devices'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('devices')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // If the user has an org_id, fetch only their org's devices
+      const query = supabase.from('devices').select('*');
+      
+      if (profile?.org_id) {
+        query.eq('org_id', profile.org_id);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as Device[];
@@ -75,7 +81,7 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
       // that would trigger the remote wipe process
       console.log('Triggered remote wipe for device:', deviceId);
       
-      // Simulate API call and update status in the database
+      // Update status in the database
       const { data, error } = await supabase
         .from('devices')
         .update({ status: 'maintenance' })
@@ -129,6 +135,27 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
     setIsWipeDialogOpen(true);
   };
 
+  // Handle adding a new device
+  const handleAddDevice = async (formData: FormData) => {
+    const newDevice = {
+      type: formData.get('type') as string,
+      serial_number: formData.get('serialNumber') as string,
+      status: 'pending',
+      org_id: profile?.org_id,
+    };
+
+    try {
+      const { error } = await supabase.from('devices').insert([newDevice]);
+      
+      if (error) throw error;
+      
+      toast.success('Device added successfully');
+      queryClient.invalidateQueries({ queryKey: ['devices'] });
+    } catch (error) {
+      toast.error(`Failed to add device: ${(error as Error).message}`);
+    }
+  };
+
   return (
     <div className="glass-panel rounded-xl p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
@@ -161,18 +188,46 @@ const DeviceList = ({ isAdmin = false }: DeviceListProps) => {
                     Register a new device in the SecureGuardian system.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="py-4">
-                  <form className="space-y-4">
-                    {/* Device registration form would go here */}
-                    <p className="text-sm text-muted-foreground">
-                      This feature will be implemented in a future update.
-                    </p>
-                  </form>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline">Cancel</Button>
-                  <Button>Register Device</Button>
-                </DialogFooter>
+                <form action={handleAddDevice} className="space-y-4 py-4">
+                  <div className="grid gap-4">
+                    <div className="space-y-2">
+                      <label htmlFor="deviceType" className="text-sm font-medium">
+                        Device Type
+                      </label>
+                      <select 
+                        id="deviceType" 
+                        name="type" 
+                        className="w-full p-2 border rounded-md"
+                        required
+                      >
+                        <option value="">Select device type</option>
+                        <option value="ios">iOS Device</option>
+                        <option value="android">Android Device</option>
+                        <option value="macbook">MacBook</option>
+                        <option value="imac">iMac</option>
+                        <option value="tablet">Tablet</option>
+                        <option value="windows">Windows PC</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="serialNumber" className="text-sm font-medium">
+                        Serial Number
+                      </label>
+                      <Input 
+                        id="serialNumber" 
+                        name="serialNumber" 
+                        placeholder="Enter device serial number" 
+                        required 
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" type="button" onClick={() => document.querySelector('dialog')?.close()}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">Register Device</Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           )}
