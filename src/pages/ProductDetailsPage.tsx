@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -40,7 +39,6 @@ const ProductDetailsPage = () => {
   const { toast } = useToast();
   const { profile } = useAuth();
 
-  // Fetch product details
   const { 
     data: product, 
     isLoading: productLoading,
@@ -58,7 +56,6 @@ const ProductDetailsPage = () => {
         
       if (error) throw error;
       
-      // Transform the data to match our Product interface
       return {
         ...data,
         features: data.features as unknown as ProductFeature[]
@@ -67,7 +64,6 @@ const ProductDetailsPage = () => {
     enabled: !!productId
   });
 
-  // Fetch plans for this product
   const { 
     data: plans, 
     isLoading: plansLoading,
@@ -162,7 +158,9 @@ const ProductDetailsPage = () => {
 
       <div>
         <h2 className="text-xl font-medium mb-2">Available Plans</h2>
-        <p className="text-muted-foreground mb-6">Our per-device pricing model scales with your organization</p>
+        <p className="text-muted-foreground mb-6">
+          Enterprise-grade security with simple annual billing
+        </p>
         
         {plans && plans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

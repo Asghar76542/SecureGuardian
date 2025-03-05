@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,16 +39,15 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   };
 
   const formatBillingCycle = (cycle: string) => {
-    switch (cycle) {
-      case 'monthly':
-        return 'per device/month';
-      case 'annually':
-        return 'per device/year';
-      case 'quarterly':
-        return 'per device/quarter';
-      default:
-        return '';
-    }
+    return 'per device/year';
+  };
+
+  const getMonthlyEquivalent = (price: number) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 0
+    }).format(Math.round(price / 12));
   };
 
   const handlePurchase = async () => {
@@ -65,12 +63,10 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
-      // Create a purchase order
       const { data, error } = await supabase
         .from('purchase_orders')
         .insert({
           user_id: profile.id,
-          // Only use org_id if it exists in the profile
           ...(profile.org_id && { org_id: profile.org_id }),
           product_plan_id: plan.id,
           amount: plan.price,
@@ -81,7 +77,6 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         
       if (error) throw error;
       
-      // Create a purchase order item
       const { error: itemError } = await supabase
         .from('purchase_order_items')
         .insert({
@@ -115,18 +110,6 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     }
   };
 
-  // Add annual savings badge text if plan is annual
-  const getAnnualSavingsBadge = () => {
-    if (plan.billing_cycle === 'annually') {
-      return (
-        <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200">
-          Save 50%
-        </Badge>
-      );
-    }
-    return null;
-  };
-
   return (
     <>
       <Card className={`overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''}`}>
@@ -145,7 +128,9 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           <div className="mb-4">
             <span className="text-3xl font-bold">{formatPrice(plan.price)}</span>
             <span className="text-muted-foreground ml-1">{formatBillingCycle(plan.billing_cycle)}</span>
-            {getAnnualSavingsBadge()}
+            <div className="mt-1 text-sm text-muted-foreground">
+              (Only {getMonthlyEquivalent(plan.price)} per month, billed annually)
+            </div>
           </div>
           
           <div className="space-y-3">
@@ -172,7 +157,6 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         </CardFooter>
       </Card>
 
-      {/* Confirmation Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
@@ -191,15 +175,14 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
               <span>Price:</span>
               <span className="font-medium">{formatPrice(plan.price)} {formatBillingCycle(plan.billing_cycle)}</span>
             </div>
+            <div className="flex justify-between">
+              <span>Monthly equivalent:</span>
+              <span>{getMonthlyEquivalent(plan.price)} per month</span>
+            </div>
             <p className="text-sm text-muted-foreground mt-4">
               Your purchase request will be sent to an administrator for approval.
               You will be notified once your request has been processed.
             </p>
-            {plan.billing_cycle === 'annually' && (
-              <p className="text-sm text-green-600 mt-2">
-                Annual billing saves 50% compared to monthly pricing.
-              </p>
-            )}
           </div>
           
           <DialogFooter>
