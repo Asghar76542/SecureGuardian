@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,9 +28,10 @@ interface PlanProps {
     is_popular: boolean;
   };
   productName: string;
+  productType?: string;
 }
 
-const PlanCard = ({ plan, productName }: PlanProps) => {
+const PlanCard = ({ plan, productName, productType }: PlanProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile } = useAuth();
@@ -167,7 +167,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
             onDeviceCountChange={handleItemCountChange}
           />
           
-          <PlanFeatures features={plan.features} />
+          <PlanFeatures features={plan.features} productType={productType} />
         </CardContent>
         
         <CardFooter className="pt-6 mt-auto">

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +6,7 @@ import { useToast } from '@/components/ui/use-toast';
 import DashboardLayout from '@/components/DashboardLayout';
 import PlanCard from '@/components/products/PlanCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag, Server, Cloud, Globe } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag, Server, Cloud, Globe, Usb, Smartphone, Fingerprint } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Accordion,
@@ -140,7 +139,8 @@ const ProductDetailsPage = () => {
 
   const isSecuritySuite = product?.name?.includes("Security Suite");
   const isInfrastructureSuite = product?.name?.includes("Infrastructure Suite");
-
+  const isYubiKey = product?.name?.toLowerCase().includes("yubikey");
+  
   const isLoading = productLoading || plansLoading;
   const error = productError || plansError;
 
@@ -397,6 +397,125 @@ const ProductDetailsPage = () => {
             </Accordion>
           </div>
         </>
+      ) : isYubiKey ? (
+        <>
+          {/* YubiKey Key Features */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Key Features: The Pillars of YubiKey Security</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Shield className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Uncompromising Two-Factor Authentication</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Go beyond passwords with the strongest form of two-factor authentication. YubiKey requires physical 
+                  possession of the device, making it virtually impossible for attackers to gain access to your accounts.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Universal Compatibility</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Seamlessly works with hundreds of online services, applications, and all major operating systems 
+                  including Windows, macOS, Linux, Android, and iOS.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Usb className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Effortless Operation</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Designed for simplicity with no batteries or complex setup required. Simply plug into a USB port or tap 
+                  on an NFC-enabled device to authenticate.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Fingerprint className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Phishing Resistance</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Specifically engineered to be phishing-resistant, YubiKey verifies the legitimacy of the login page, 
+                  preventing attackers from tricking you into entering credentials on fake websites.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* YubiKey Technical Details */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Technical Details: How YubiKey Works</h2>
+            <Accordion type="single" collapsible className="mb-6">
+              <AccordionItem value="authentication-protocols">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Supported Authentication Protocols
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    YubiKey supports a wide range of authentication protocols to ensure broad compatibility with services and applications:
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Protocols:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li><span className="font-medium">FIDO2/WebAuthn:</span> The latest standard for passwordless authentication</li>
+                      <li><span className="font-medium">FIDO U2F:</span> Universal 2nd Factor for strong two-factor authentication</li>
+                      <li><span className="font-medium">Smart Card (PIV):</span> Personal Identity Verification for secure certificate-based authentication</li>
+                      <li><span className="font-medium">OpenPGP:</span> For secure email communication and document signing</li>
+                      <li><span className="font-medium">OATH-TOTP/HOTP:</span> Time-based and HMAC-based One-Time Passwords</li>
+                      <li><span className="font-medium">Yubico OTP:</span> Yubico's proprietary one-time password protocol</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="connectivity-options">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Connectivity Options
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    YubiKey offers multiple connectivity options to ensure compatibility with a wide range of devices:
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Available Interfaces:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li><span className="font-medium">USB-A:</span> Standard USB port compatibility for most computers and laptops</li>
+                      <li><span className="font-medium">USB-C:</span> Modern connector for newer laptops, tablets, and smartphones</li>
+                      <li><span className="font-medium">NFC:</span> Near Field Communication for tap-and-go authentication on mobile devices</li>
+                      <li><span className="font-medium">Lightning:</span> Available on select models for direct connection to iOS devices</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="security-features">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Advanced Security Features
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    YubiKey incorporates advanced security features to provide robust protection:
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Security Highlights:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li><span className="font-medium">Tamper-Resistant Design:</span> Hardware is designed to be physically tamper-resistant</li>
+                      <li><span className="font-medium">No Battery or Moving Parts:</span> Improves durability and reliability</li>
+                      <li><span className="font-medium">Secure Element:</span> Cryptographic operations are performed within a secure element that protects private keys</li>
+                      <li><span className="font-medium">No Client Software Required:</span> Reduces attack surface by eliminating the need for additional software</li>
+                      <li><span className="font-medium">Phishing-Resistant Design:</span> Uses origin-bound authentication to prevent credential theft</li>
+                      <li><span className="font-medium">PIN Protection:</span> Optional PIN requirement for additional security (FIDO2)</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </>
       ) : (
         // Standard product features section for non-Suite products
         <div className="mb-8">
@@ -435,6 +554,17 @@ const ProductDetailsPage = () => {
           </div>
         )}
         
+        {isYubiKey && (
+          <div className="bg-amber-50 border border-amber-200 p-4 rounded-md mb-6 text-sm">
+            <p className="font-medium mb-2">Deployment Note:</p>
+            <p className="text-muted-foreground">
+              For enterprise deployments, we recommend considering the bulk purchasing option to efficiently secure your team. 
+              Each YubiKey is individually packaged and can be easily distributed to team members. The Enterprise Pack includes 
+              access to our management console for streamlined deployment.
+            </p>
+          </div>
+        )}
+        
         {plans && plans.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {plans.map(plan => (
@@ -442,6 +572,7 @@ const ProductDetailsPage = () => {
                 key={plan.id} 
                 plan={plan} 
                 productName={product.name}
+                productType={product.type}
               />
             ))}
           </div>
