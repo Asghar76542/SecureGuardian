@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { UserProfile } from '@/integrations/supabase/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface DashboardHeaderProps {
   pathname: string;
-  profile?: UserProfile | null;
+  profile?: any | null; // Use any temporarily to fix the type error
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ pathname, profile }) => {
