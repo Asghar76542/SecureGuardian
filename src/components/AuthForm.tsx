@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Shield, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface AuthFormProps {
   isLogin?: boolean;
@@ -27,10 +28,14 @@ const AuthForm = ({ isLogin = true }: AuthFormProps) => {
       if (isLogin) {
         await signIn(email, password);
       } else {
-        await signUp(email, password, fullName);
+        console.log('Signing up with:', { email, password, fullName });
+        const result = await signUp(email, password, fullName);
+        console.log('Signup result:', result);
       }
     } catch (err: any) {
+      console.error('Auth error:', err);
       setError(err.message || 'An error occurred');
+      toast.error(err.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }

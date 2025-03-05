@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface NavbarProps {
   setMobileMenuOpen: (open: boolean) => void;
@@ -20,6 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({ setMobileMenuOpen }) => {
   useEffect(() => {
     if (!isAdmin) return;
     
+    console.log("Admin user - fetching pending users count");
     const fetchPendingCount = async () => {
       try {
         const { count, error } = await supabase
@@ -32,6 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ setMobileMenuOpen }) => {
           return;
         }
         
+        console.log(`Found ${count} pending users`);
         setPendingCount(count || 0);
       } catch (error) {
         console.error('Failed to fetch pending users count:', error);
@@ -40,21 +43,41 @@ const Navbar: React.FC<NavbarProps> = ({ setMobileMenuOpen }) => {
     
     fetchPendingCount();
     
-    // Set up real-time subscription for pending users
+    // Enable realtime updates for pending users
+    console.log("Setting up realtime subscription for users table");
     const subscription = supabase
       .channel('users-changes')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'users' }, 
-        () => {
+        { 
+          event: '*', 
+          schema: 'public', 
+          table: 'users',
+          filter: 'approval_status=eq.pending' 
+        }, 
+        (payload) => {
+          console.log('Realtime update from users table:', payload);
           fetchPendingCount();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
     
     return () => {
+      console.log("Cleaning up realtime subscription");
       subscription.unsubscribe();
     };
   }, [isAdmin]);
+  
+  // Debug log for rendering
+  useEffect(() => {
+    console.log("Navbar rendered with pending count:", pendingCount);
+  }, [pendingCount]);
+  
+  const handleViewApprovals = () => {
+    console.log("Navigating to approvals page");
+    navigate('/admin/approvals');
+  };
   
   return (
     <header className="bg-card border-b border-border px-4 py-2 flex items-center justify-between">
@@ -68,22 +91,20 @@ const Navbar: React.FC<NavbarProps> = ({ setMobileMenuOpen }) => {
       </Button>
 
       <div className="flex items-center space-x-2 ml-auto">
-        {isAdmin && pendingCount > 0 && (
+        {isAdmin && (
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate('/admin/approvals')}
+            onClick={handleViewApprovals}
             className="relative"
+            title="User approvals"
           >
             <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-500 text-white">
-              {pendingCount}
-            </Badge>
-          </Button>
-        )}
-        {isAdmin && pendingCount === 0 && (
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
+            {pendingCount > 0 && (
+              <Badge className="absolute -top-1 -right-1 px-1.5 py-0.5 bg-amber-500 text-white">
+                {pendingCount}
+              </Badge>
+            )}
           </Button>
         )}
         <Button 

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, Search, UserCheck, ExternalLink } from 'lucide-react';
+import { AlertCircle, Search, UserCheck, ExternalLink, RefreshCw } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -21,6 +21,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import { toast } from 'sonner';
 
@@ -38,8 +39,10 @@ const UserApprovals = () => {
   
   // Subscribe to users table changes
   useEffect(() => {
+    console.log("Setting up realtime subscription for UserApprovals component");
+    
     const subscription = supabase
-      .channel('public:users')
+      .channel('public:users:pendingApprovals')
       .on('postgres_changes', 
         { 
           event: '*', 
@@ -47,20 +50,23 @@ const UserApprovals = () => {
           table: 'users',
           filter: 'approval_status=eq.pending'
         }, 
-        () => {
-          console.log('Users table changed, refreshing data');
+        (payload) => {
+          console.log('Realtime update received for pending users:', payload);
           queryClient.invalidateQueries({ queryKey: ['pendingUsers'] });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status in UserApprovals:', status);
+      });
     
     return () => {
+      console.log("Cleaning up realtime subscription in UserApprovals");
       subscription.unsubscribe();
     };
   }, [queryClient]);
   
   // Fetch pending users
-  const { data: pendingUsers, isLoading, error } = useQuery({
+  const { data: pendingUsers, isLoading, error, refetch } = useQuery({
     queryKey: ['pendingUsers'],
     queryFn: async () => {
       console.log('Fetching pending users');
@@ -76,29 +82,46 @@ const UserApprovals = () => {
         throw error;
       }
       
-      console.log('Fetched pending users:', data?.length || 0);
+      console.log('Fetched pending users:', data);
       return data as User[];
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
-  // Check for zaheer user specifically (for debugging)
-  useEffect(() => {
-    const checkForZaheer = async () => {
-      const { data, error } = await supabase
+  // Manual fetch for debugging
+  const handleManualRefetch = async () => {
+    console.log("Manually refreshing pending users data");
+    toast.info("Refreshing pending users list...");
+    await refetch();
+  };
+
+  // Try direct DB query for debugging
+  const checkRawPendingUsers = async () => {
+    console.log("Running direct DB query for pending users");
+    
+    try {
+      const { data, error, count } = await supabase
         .from('users')
-        .select('*')
-        .ilike('email', '%zaheer%');
+        .select('*', { count: 'exact' })
+        .eq('approval_status', 'pending');
+      
+      console.log("Direct query result:", { data, error, count });
       
       if (error) {
-        console.error('Error checking for Zaheer:', error);
+        console.error("Direct query error:", error);
+        toast.error("Direct query failed: " + error.message);
+      } else if (data && data.length > 0) {
+        console.log("Found pending users directly:", data);
+        toast.success(`Found ${data.length} pending users directly`);
       } else {
-        console.log('Found zaheer users:', data);
+        console.log("No pending users found in direct query");
+        toast.info("No pending users found in direct query");
       }
-    };
-    
-    checkForZaheer();
-  }, []);
+    } catch (err) {
+      console.error("Error in direct query:", err);
+      toast.error("Error in direct query");
+    }
+  };
 
   // Filter users based on search query
   const filteredUsers = pendingUsers?.filter(user => 
@@ -132,15 +155,17 @@ const UserApprovals = () => {
         </CardHeader>
         <CardContent>
           <p>Error loading pending users: {(error as Error).message}</p>
+          <Button 
+            onClick={handleManualRefetch} 
+            variant="outline" 
+            className="mt-4"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" /> Retry
+          </Button>
         </CardContent>
       </Card>
     );
   }
-
-  // Check if we have a specific user that needs approval (for test user Zaheer)
-  const hasZaheerUser = pendingUsers?.some(user => 
-    user.email.toLowerCase().includes('zaheer')
-  );
 
   return (
     <Card>
@@ -164,28 +189,6 @@ const UserApprovals = () => {
         </div>
       </CardHeader>
       <CardContent>
-        {hasZaheerUser && (
-          <div className="mb-6 p-4 border border-amber-300 bg-amber-50 rounded-lg">
-            <div className="flex flex-col sm:flex-row justify-between items-center">
-              <div>
-                <h3 className="font-semibold text-amber-800">Priority Approval</h3>
-                <p className="text-amber-700 text-sm">A priority user is waiting for your approval: Zaheer</p>
-              </div>
-              <Button 
-                onClick={() => {
-                  const zaheerUser = pendingUsers?.find(user => user.email.toLowerCase().includes('zaheer'));
-                  if (zaheerUser) {
-                    navigate(`/admin/approve/${zaheerUser.id}`);
-                  }
-                }}
-                className="mt-3 sm:mt-0 bg-amber-500 hover:bg-amber-600 text-white"
-              >
-                Review Now <ExternalLink className="ml-1 h-3 w-3" />
-              </Button>
-            </div>
-          </div>
-        )}
-
         {filteredUsers && filteredUsers.length > 0 ? (
           <div className="overflow-x-auto">
             <Table>
@@ -232,6 +235,24 @@ const UserApprovals = () => {
           </div>
         )}
       </CardContent>
+      <CardFooter className="flex justify-between">
+        <Button 
+          variant="outline" 
+          className="text-xs" 
+          size="sm" 
+          onClick={checkRawPendingUsers}
+        >
+          Check DB Directly
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleManualRefetch}
+          className="gap-1"
+        >
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+        </Button>
+      </CardFooter>
     </Card>
   );
 };

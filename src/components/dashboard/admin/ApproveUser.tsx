@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Check, X, AlertCircle, Shield, User } from 'lucide-react';
+import { Check, X, AlertCircle, Shield, User, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Card,
@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import type { Database } from '@/integrations/supabase/types';
 
 type UserRole = Database['public']['Enums']['user_role'];
@@ -39,18 +40,24 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
   const [showRejectionReason, setShowRejectionReason] = useState<boolean>(false);
 
   // Fetch user if not provided
-  const { data: user, isLoading: isUserLoading, error: userError } = useQuery({
+  const { data: user, isLoading: isUserLoading, error: userError, refetch: refetchUser } = useQuery({
     queryKey: ['user', userId],
     queryFn: async () => {
       if (userName && userEmail) return { full_name: userName, email: userEmail };
       
+      console.log("Fetching user details for approval:", userId);
       const { data, error } = await supabase
         .from('users')
-        .select('full_name, email')
+        .select('full_name, email, approval_status')
         .eq('id', userId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching user for approval:", error);
+        throw error;
+      }
+      
+      console.log("Retrieved user for approval:", data);
       return data;
     },
     enabled: !!userId,
@@ -59,27 +66,39 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
   // Approve user mutation
   const approveMutation = useMutation({
     mutationFn: async () => {
+      console.log(`Approving user ${userId} with role ${selectedRole}`);
+      
       // First update user role
       const { error: roleError } = await supabase
         .from('users')
         .update({ role: selectedRole })
         .eq('id', userId);
       
-      if (roleError) throw roleError;
+      if (roleError) {
+        console.error("Error updating role:", roleError);
+        throw roleError;
+      }
       
       // Then approve the user
       const { data, error } = await supabase
         .rpc('approve_user', { user_uuid: userId });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error approving user:", error);
+        throw error;
+      }
+      
+      console.log("User approved successfully:", data);
       return data;
     },
     onSuccess: () => {
       toast.success('User approved successfully');
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingUsers'] });
       if (afterApproval) afterApproval();
     },
     onError: (error) => {
+      console.error("Approval mutation error:", error);
       toast.error(`Failed to approve user: ${error.message}`);
     },
   });
@@ -87,6 +106,8 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
   // Reject user mutation
   const rejectMutation = useMutation({
     mutationFn: async () => {
+      console.log(`Rejecting user ${userId} with reason: ${rejectionReason}`);
+      
       // Store the rejection reason in a comments field or similar
       // We'll use a separate table or field for this if needed
       console.log("Rejection reason:", rejectionReason);
@@ -95,29 +116,60 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
       const { data, error } = await supabase
         .rpc('reject_user', { user_uuid: userId });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Error rejecting user:", error);
+        throw error;
+      }
+      
+      console.log("User rejected successfully:", data);
       return data;
     },
     onSuccess: () => {
       toast.success('User rejected successfully');
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['pendingUsers'] });
       if (afterApproval) afterApproval();
     },
     onError: (error) => {
+      console.error("Rejection mutation error:", error);
       toast.error(`Failed to reject user: ${error.message}`);
     },
   });
 
   if (isUserLoading) {
-    return <div className="p-4">Loading user information...</div>;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Loading User Information</CardTitle>
+          <CardDescription>Please wait while we fetch the user details...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Progress value={30} className="w-full mt-2" />
+        </CardContent>
+      </Card>
+    );
   }
 
   if (userError) {
     return (
-      <div className="p-4 text-destructive flex items-center">
-        <AlertCircle className="mr-2" />
-        Error loading user: {(userError as Error).message}
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center">
+            <AlertCircle className="mr-2" />
+            Error Loading User
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Error loading user: {(userError as Error).message}</p>
+          <Button 
+            variant="outline" 
+            className="mt-4" 
+            onClick={() => refetchUser()}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" /> Retry
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -141,6 +193,9 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
               </div>
               <div>
                 <span className="font-semibold">User ID:</span> {userId}
+              </div>
+              <div>
+                <span className="font-semibold">Status:</span> {user.approval_status || 'pending'}
               </div>
             </div>
             
