@@ -1,22 +1,23 @@
 
 import { useState } from 'react';
-import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost } from '@/utils/priceFormatters';
+import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost, isDevicePlan } from '@/utils/priceFormatters';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface PlanPricingProps {
   price: number;
   billingCycle: string;
+  onDeviceCountChange?: (count: number) => void;
 }
 
-const PlanPricing = ({ price, billingCycle }: PlanPricingProps) => {
+const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingProps) => {
   const [deviceCount, setDeviceCount] = useState(1);
   const isHardware = billingCycle.includes('unit');
-  const isDevicePlan = billingCycle.includes('device');
+  const devicePlan = isDevicePlan(billingCycle);
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
   
   // Calculate multi-device costs if it's a device plan
-  const costs = isDevicePlan 
+  const costs = devicePlan 
     ? calculateMultiDeviceCost(deviceCount, price) 
     : null;
 
@@ -24,13 +25,16 @@ const PlanPricing = ({ price, billingCycle }: PlanPricingProps) => {
     const count = parseInt(e.target.value);
     if (!isNaN(count) && count > 0 && count <= 100) {
       setDeviceCount(count);
+      if (onDeviceCountChange) {
+        onDeviceCountChange(count);
+      }
     }
   };
 
   return (
     <div className="mb-4">
       {/* Main price display */}
-      {isDevicePlan ? (
+      {devicePlan ? (
         <div className="space-y-4">
           <div>
             <span className="text-3xl font-bold">{formatPrice(price)}</span>

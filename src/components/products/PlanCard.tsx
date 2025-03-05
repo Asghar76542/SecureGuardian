@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import PlanFeatures from './PlanFeatures';
 import PlanPricing from './PlanPricing';
 import PurchaseConfirmDialog from './PurchaseConfirmDialog';
-import { calculateMultiDeviceCost } from '@/utils/priceFormatters';
+import { calculateMultiDeviceCost, isDevicePlan } from '@/utils/priceFormatters';
 
 interface PlanProps {
   plan: {
@@ -34,10 +34,10 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [deviceCount, setDeviceCount] = useState(1);
   
-  const isDevicePlan = plan.billing_cycle.includes('device');
+  const devicePlan = isDevicePlan(plan.billing_cycle);
   
   // Get pricing details for device-based plans
-  const costs = isDevicePlan 
+  const costs = devicePlan 
     ? calculateMultiDeviceCost(deviceCount, plan.price) 
     : null;
   
@@ -54,7 +54,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
-      const orderAmount = isDevicePlan
+      const orderAmount = devicePlan
         ? costs?.totalFirstPayment || plan.price
         : plan.price;
       
@@ -66,7 +66,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           product_plan_id: plan.id,
           amount: orderAmount,
           billing_cycle: plan.billing_cycle,
-          ...(isDevicePlan && { 
+          ...(devicePlan && { 
             notes: JSON.stringify({
               deviceCount,
               setupFee: costs?.setupFee,
@@ -85,7 +85,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
           purchase_order_id: data.id,
           product_id: plan.product_id,
           product_plan_id: plan.id,
-          quantity: isDevicePlan ? deviceCount : 1,
+          quantity: devicePlan ? deviceCount : 1,
           unit_price: plan.price,
           total_price: orderAmount
         });
@@ -112,6 +112,10 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
     }
   };
 
+  const handleDeviceCountChange = (count: number) => {
+    setDeviceCount(count);
+  };
+
   return (
     <>
       <Card className={`overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''}`}>
@@ -129,7 +133,8 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
         <CardContent className="pb-0 flex-grow">
           <PlanPricing 
             price={plan.price} 
-            billingCycle={plan.billing_cycle} 
+            billingCycle={plan.billing_cycle}
+            onDeviceCountChange={handleDeviceCountChange}
           />
           
           <PlanFeatures features={plan.features} />

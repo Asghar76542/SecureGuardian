@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Loader2 } from 'lucide-react';
-import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost } from '@/utils/priceFormatters';
+import { formatPrice, formatBillingCycle, getMonthlyEquivalent, calculateMultiDeviceCost, isDevicePlan } from '@/utils/priceFormatters';
 
 interface PurchaseConfirmDialogProps {
   open: boolean;
@@ -29,11 +29,11 @@ const PurchaseConfirmDialog = ({
   deviceCount = 1
 }: PurchaseConfirmDialogProps) => {
   const isHardware = billingCycle.includes('unit');
-  const isDevicePlan = billingCycle.includes('device');
+  const devicePlan = isDevicePlan(billingCycle);
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
   
   // Calculate costs for device plans
-  const costs = isDevicePlan 
+  const costs = devicePlan 
     ? calculateMultiDeviceCost(deviceCount, price) 
     : null;
 
@@ -53,7 +53,7 @@ const PurchaseConfirmDialog = ({
             <span className="font-medium">{planName}</span>
           </div>
           
-          {isDevicePlan ? (
+          {devicePlan ? (
             <>
               <div className="flex justify-between mb-2">
                 <span>Number of devices:</span>
@@ -90,7 +90,7 @@ const PurchaseConfirmDialog = ({
           <p className="text-sm text-muted-foreground mt-4">
             {isHardware 
               ? 'Your hardware purchase request will be sent to an administrator for approval.'
-              : isDevicePlan
+              : devicePlan
                 ? 'Your multi-device security plan request will be sent to an administrator for approval.'
                 : 'Your subscription purchase request will be sent to an administrator for approval.'}
             You will be notified once your request has been processed.

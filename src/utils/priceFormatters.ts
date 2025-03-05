@@ -14,7 +14,7 @@ export const formatPrice = (price: number) => {
 export const formatBillingCycle = (billingCycle?: string) => {
   if (!billingCycle) return '';
   
-  if (billingCycle.includes('device')) {
+  if (billingCycle === 'per-device' || billingCycle.includes('device')) {
     return 'per device/month';
   } else if (billingCycle.includes('unit')) {
     return 'per unit';
@@ -63,4 +63,11 @@ export const calculateMultiDeviceCost = (
     monthlyPrice: totalMonthlyPrice,
     totalFirstPayment: totalSetupFee + totalMonthlyPrice,
   };
+};
+
+/**
+ * Check if a plan is a device-based plan
+ */
+export const isDevicePlan = (billingCycle?: string): boolean => {
+  return !!billingCycle && (billingCycle === 'per-device' || billingCycle.includes('device'));
 };
