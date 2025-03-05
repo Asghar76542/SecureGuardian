@@ -24,29 +24,40 @@ const userGroups = [
 
 const UserGroups = () => {
   return (
-    <section id="users" className="py-16">
+    <section id="users" className="bg-card">
       <div className="section-container">
-        <div className="text-center mb-14">
-          <h2 className="section-title">
-            Security Standards & Protocols
-          </h2>
+        <div className="inline-flex items-center px-3 py-1 rounded-full bg-secondary/50 border border-border text-sm text-foreground/80 mx-auto mb-6">
+          <span>Target Users</span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <h2 className="section-title">
+          Who <span className="highlight-text">It's For</span>
+        </h2>
+        
+        <p className="section-description">
+          SecureGuardian is designed exclusively for verified professionals who handle sensitive information in high-risk environments.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {userGroups.map((group, index) => (
             <div 
               key={index} 
-              className="glass-panel bg-secondary/30 border border-white/5 rounded-xl p-6 relative overflow-hidden opacity-0 animate-fade-in-up"
+              className="glass-panel rounded-xl p-8 relative overflow-hidden opacity-0 animate-fade-in-up"
               style={{ animationDelay: `${(index * 200)}ms`, animationFillMode: 'forwards' }}
             >
-              {/* Icon */}
-              <div className="relative z-10 mb-5 h-8 w-8 text-primary flex items-center justify-start">
-                {group.icon}
+              {/* Background gradient */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${group.color} opacity-30 z-0`}></div>
+              
+              {/* Icon circle */}
+              <div className="relative z-10 mb-6 h-14 w-14 rounded-full bg-secondary flex items-center justify-center">
+                <div className="text-primary">
+                  {group.icon}
+                </div>
               </div>
               
-              <h3 className="relative z-10 text-lg font-display font-semibold mb-3">{group.title}</h3>
+              <h3 className="relative z-10 text-xl font-display font-semibold mb-4">{group.title}</h3>
               
-              <p className="relative z-10 text-muted-foreground text-sm">{group.description}</p>
+              <p className="relative z-10 text-muted-foreground">{group.description}</p>
             </div>
           ))}
         </div>
