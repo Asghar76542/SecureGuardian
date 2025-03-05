@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -17,7 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-// Types for customer data
 interface Customer {
   id: string;
   name: string;
@@ -33,7 +31,6 @@ interface Customer {
   last_login: string | null;
 }
 
-// Types for subscription data
 interface Subscription {
   id: string;
   org_id: string;
@@ -44,7 +41,6 @@ interface Subscription {
   status: string;
 }
 
-// Types for device data with organization included
 interface CustomerDevice {
   id: string;
   serial_number: string;
@@ -63,7 +59,6 @@ const CustomerManagement = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [selectedView, setSelectedView] = useState<'overview' | 'subscriptions' | 'devices'>('overview');
 
-  // Fetch customers (users with organizations)
   const { data: customers, isLoading, error } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
@@ -81,10 +76,9 @@ const CustomerManagement = () => {
           organizations(id, name)
         `)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
-      // Transform the data to flatten the organization info
+
       return data.map(user => ({
         id: user.id,
         name: user.full_name,
@@ -95,12 +89,11 @@ const CustomerManagement = () => {
         status: user.status,
         created_at: user.created_at,
         last_login: user.last_login,
-        device_count: 0 // Will be populated in a separate query
+        device_count: 0
       })) as Customer[];
     },
   });
-  
-  // Fetch device counts per organization
+
   const { data: deviceCounts } = useQuery({
     queryKey: ['device-counts'],
     queryFn: async () => {
@@ -108,55 +101,52 @@ const CustomerManagement = () => {
         .from('devices')
         .select('org_id, id')
         .order('org_id');
-      
+
       if (error) throw error;
-      
-      // Group by org_id and count
+
       const counts: Record<string, number> = {};
       data.forEach(device => {
         if (device.org_id) {
           counts[device.org_id] = (counts[device.org_id] || 0) + 1;
         }
       });
-      
+
       return counts;
-    },
-    onSuccess: (counts) => {
-      // Update the device counts for each customer if we have customer data
-      if (customers) {
-        customers.forEach(customer => {
-          if (customer.org_id && counts[customer.org_id]) {
-            customer.device_count = counts[customer.org_id];
-          }
-        });
-      }
     }
   });
-  
-  // Fetch subscriptions when a customer is selected
+
+  useEffect(() => {
+    if (customers && deviceCounts) {
+      customers.forEach(customer => {
+        if (customer.org_id && deviceCounts[customer.org_id]) {
+          customer.device_count = deviceCounts[customer.org_id];
+        }
+      });
+    }
+  }, [customers, deviceCounts]);
+
   const { data: subscriptions, isLoading: isLoadingSubscriptions } = useQuery({
     queryKey: ['customer-subscriptions', selectedCustomer?.org_id],
     queryFn: async () => {
       if (!selectedCustomer?.org_id) return [];
-      
+
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
         .eq('org_id', selectedCustomer.org_id)
         .order('start_date', { ascending: false });
-      
+
       if (error) throw error;
       return data as Subscription[];
     },
     enabled: !!selectedCustomer?.org_id
   });
-  
-  // Fetch devices when a customer is selected
+
   const { data: devices, isLoading: isLoadingDevices } = useQuery({
     queryKey: ['customer-devices', selectedCustomer?.org_id],
     queryFn: async () => {
       if (!selectedCustomer?.org_id) return [];
-      
+
       const { data, error } = await supabase
         .from('devices')
         .select(`
@@ -165,9 +155,9 @@ const CustomerManagement = () => {
         `)
         .eq('org_id', selectedCustomer.org_id)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
-      
+
       return data.map(device => ({
         ...device,
         org_name: device.organizations ? device.organizations.name : 'Unknown'
@@ -176,14 +166,11 @@ const CustomerManagement = () => {
     enabled: !!selectedCustomer?.org_id && selectedView === 'devices'
   });
 
-  // Filter customers based on search and active tab
   const filteredCustomers = customers?.filter(customer => {
-    // First filter by status tab
     if (activeTab !== 'all' && customer.status !== activeTab) {
       return false;
     }
-    
-    // Then filter by search query (name, email, or organization)
+
     const query = searchQuery.toLowerCase();
     return (
       customer.name.toLowerCase().includes(query) || 
@@ -209,7 +196,7 @@ const CustomerManagement = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
   const getSubscriptionStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -222,7 +209,7 @@ const CustomerManagement = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-  
+
   const getDeviceStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
@@ -237,20 +224,19 @@ const CustomerManagement = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-  
+
   const handleCustomerSelect = (customer: Customer) => {
     setSelectedCustomer(customer);
     setSelectedView('overview');
   };
-  
+
   const handleBackToList = () => {
     setSelectedCustomer(null);
   };
-  
-  // Render customer detail view
+
   const renderCustomerDetail = () => {
     if (!selectedCustomer) return null;
-    
+
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-start">
@@ -579,13 +565,12 @@ const CustomerManagement = () => {
       </div>
     );
   };
-  
-  // Render customer list
+
   const renderCustomerList = () => {
     if (isLoading) {
       return <div className="text-center py-12">Loading customers...</div>;
     }
-    
+
     if (error) {
       return (
         <div className="p-6 border border-destructive/20 bg-destructive/10 rounded-lg text-destructive flex items-center">
@@ -597,7 +582,7 @@ const CustomerManagement = () => {
         </div>
       );
     }
-    
+
     return (
       <>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
