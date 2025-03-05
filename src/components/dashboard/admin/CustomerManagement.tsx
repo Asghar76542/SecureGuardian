@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Filter, Users, ShieldCheck, Building, Smartphone, Package, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { Search, Filter, Users, ShieldCheck, Building, Smartphone, Package, Calendar, Clock, AlertCircle, ShoppingCart } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -15,6 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import PurchaseOrdersList from './customer/PurchaseOrdersList';
+import PurchaseOrdersCard from './customer/PurchaseOrdersCard';
 
 interface Customer {
   id: string;
@@ -57,7 +59,7 @@ const CustomerManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [selectedView, setSelectedView] = useState<'overview' | 'subscriptions' | 'devices'>('overview');
+  const [selectedView, setSelectedView] = useState<'overview' | 'subscriptions' | 'devices' | 'orders'>('overview');
 
   const { data: customers, isLoading, error } = useQuery({
     queryKey: ['customers'],
@@ -315,11 +317,15 @@ const CustomerManagement = () => {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
             <TabsTrigger value="devices">Devices</TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              <span>Purchase Orders</span>
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="md:col-span-2">
                 <CardHeader>
                   <CardTitle>Subscription Summary</CardTitle>
                   <CardDescription>
@@ -380,67 +386,47 @@ const CustomerManagement = () => {
                 )}
               </Card>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle>Device Summary</CardTitle>
-                  <CardDescription>
-                    Connected devices and status
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {selectedCustomer.device_count > 0 ? (
-                    <div className="space-y-4">
+              <div className="space-y-6">
+                <PurchaseOrdersCard 
+                  customerId={selectedCustomer.id} 
+                  orgId={selectedCustomer.org_id}
+                  onViewAllOrders={() => setSelectedView('orders')}
+                />
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Device Summary</CardTitle>
+                    <CardDescription>
+                      Connected devices
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedCustomer.device_count > 0 ? (
                       <div className="flex justify-between">
                         <span className="font-medium">Total Devices</span>
                         <span>{selectedCustomer.device_count}</span>
                       </div>
-                      <div className="mt-4">
-                        <h4 className="text-sm font-medium mb-2">Device Types</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="flex items-center gap-2 p-2 rounded-md border">
-                            <div className="p-1.5 bg-primary/10 rounded-full">
-                              <Smartphone className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">Mobile</div>
-                              <div className="text-xs text-muted-foreground">3 devices</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 p-2 rounded-md border">
-                            <div className="p-1.5 bg-primary/10 rounded-full">
-                              <Package className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium">Other</div>
-                              <div className="text-xs text-muted-foreground">2 devices</div>
-                            </div>
-                          </div>
-                        </div>
+                    ) : (
+                      <div className="text-center py-3">
+                        <p className="text-sm text-muted-foreground">
+                          No devices registered
+                        </p>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <Smartphone className="h-12 w-12 mx-auto text-muted-foreground/50" />
-                      <h3 className="mt-2 font-medium">No Devices</h3>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        This customer doesn't have any registered devices.
-                      </p>
-                      <Button className="mt-4">Add Device</Button>
-                    </div>
+                    )}
+                  </CardContent>
+                  {selectedCustomer.device_count > 0 && (
+                    <CardFooter>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setSelectedView('devices')}
+                      >
+                        View Devices
+                      </Button>
+                    </CardFooter>
                   )}
-                </CardContent>
-                {selectedCustomer.device_count > 0 && (
-                  <CardFooter>
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => setSelectedView('devices')}
-                    >
-                      View All Devices
-                    </Button>
-                  </CardFooter>
-                )}
-              </Card>
+                </Card>
+              </div>
             </div>
           </TabsContent>
           
@@ -560,6 +546,12 @@ const CustomerManagement = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="orders">
+            {selectedCustomer && (
+              <PurchaseOrdersList customerId={selectedCustomer.id} orgId={selectedCustomer.org_id} />
+            )}
           </TabsContent>
         </Tabs>
       </div>
