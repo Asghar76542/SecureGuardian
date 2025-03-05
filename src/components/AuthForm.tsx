@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Shield, Loader2 } from 'lucide-react';
+import { Shield, Loader2, Home } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -176,22 +176,29 @@ const AuthForm = ({ isLogin = true }: AuthFormProps) => {
           )}
         </Button>
 
-        <div className="text-sm text-center text-muted-foreground">
-          {isLogin ? (
-            <>
-              Don't have an account?{' '}
-              <Link to="/auth/register" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <Link to="/auth" className="text-primary hover:underline">
-                Sign in
-              </Link>
-            </>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+          <div className="text-muted-foreground">
+            {isLogin ? (
+              <>
+                Don't have an account?{' '}
+                <Link to="/auth/register" className="text-primary hover:underline">
+                  Sign up
+                </Link>
+              </>
+            ) : (
+              <>
+                Already have an account?{' '}
+                <Link to="/auth" className="text-primary hover:underline">
+                  Sign in
+                </Link>
+              </>
+            )}
+          </div>
+          
+          <Link to="/" className="text-primary hover:underline flex items-center">
+            <Home className="h-3.5 w-3.5 mr-1" />
+            Return to Homepage
+          </Link>
         </div>
       </form>
     </div>
