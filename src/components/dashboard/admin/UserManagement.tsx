@@ -4,8 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, X, UserPlus, Search, AlertCircle } from 'lucide-react';
+import { Check, X, UserPlus, Search, AlertCircle, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Link } from 'react-router-dom';
 import {
   Table,
   TableBody,
@@ -129,6 +130,12 @@ const UserManagement = () => {
     }
   };
 
+  // Check if we have the specific user that needs approval
+  const hasSpecificPendingUser = users?.some(user => 
+    user.id === "e9403c29-af1b-4a35-9d2d-e23ee6eb4136" && 
+    user.approval_status === "pending"
+  );
+
   if (isLoading) {
     return <div className="glass-panel p-6 rounded-xl">Loading users...</div>;
   }
@@ -166,6 +173,23 @@ const UserManagement = () => {
         </div>
       </div>
 
+      {hasSpecificPendingUser && (
+        <div className="mb-6 p-4 border border-amber-300 bg-amber-50 rounded-lg">
+          <div className="flex flex-col sm:flex-row justify-between items-center">
+            <div>
+              <h3 className="font-semibold text-amber-800">Pending Approval</h3>
+              <p className="text-amber-700 text-sm">A user is waiting for your approval: Zaheer Asghar</p>
+            </div>
+            <Link 
+              to="/quick-approval" 
+              className="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 rounded-md bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+            >
+              Review & Approve <ExternalLink className="ml-1 h-3 w-3" />
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -199,6 +223,15 @@ const UserManagement = () => {
                   <TableCell className="text-right">
                     {user.approval_status === 'pending' && (
                       <div className="flex justify-end gap-2">
+                        <Link to={`/admin/approve/${user.id}`}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                          >
+                            Review
+                          </Button>
+                        </Link>
                         <Button
                           size="sm"
                           variant="outline"
