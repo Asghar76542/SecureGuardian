@@ -1,9 +1,8 @@
-
 import { Navigate } from 'react-router-dom';
 import AuthForm from '@/components/AuthForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, AlertTriangle, ExternalLink, Mail } from 'lucide-react';
+import { Shield, AlertTriangle, ExternalLink, Mail, Apple, Smartphone } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -54,12 +53,38 @@ const Register = () => {
                 </div>
                 
                 <div className="ml-8">
-                  <a href="https://account.proton.me/mail/signup?plan=free&billing=12" target="_blank" rel="noopener noreferrer" className="inline-block">
+                  <a href="https://account.proton.me/mail/signup?plan=free&billing=12" target="_blank" rel="noopener noreferrer" className="inline-block mb-4">
                     <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
                       Create ProtonMail Account
                       <ExternalLink className="h-4 w-4 ml-1" />
                     </Button>
                   </a>
+                  
+                  <div className="flex flex-wrap gap-3 mt-2">
+                    <p className="text-xs text-muted-foreground w-full mb-1">Get the ProtonMail app:</p>
+                    <a 
+                      href="https://apps.apple.com/app/protonmail-encrypted-email/id979659905" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button variant="secondary" size="sm" className="h-8 text-xs">
+                        <Apple className="h-3.5 w-3.5 mr-1" />
+                        App Store
+                      </Button>
+                    </a>
+                    <a 
+                      href="https://play.google.com/store/apps/details?id=ch.protonmail.android" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-block"
+                    >
+                      <Button variant="secondary" size="sm" className="h-8 text-xs">
+                        <Smartphone className="h-3.5 w-3.5 mr-1" />
+                        Google Play
+                      </Button>
+                    </a>
+                  </div>
                 </div>
               </CardContent>
             </Card>
