@@ -5,6 +5,8 @@ import Features from "@/components/Features";
 import UserGroups from "@/components/UserGroups";
 import SecurityMeasures from "@/components/SecurityMeasures";
 import EmergencyProtocols from "@/components/EmergencyProtocols";
+import CaseStudies from "@/components/CaseStudies";
+import SecurityModules from "@/components/SecurityModules";
 import RequestDemo from "@/components/RequestDemo";
 import Footer from "@/components/Footer";
 
@@ -15,9 +17,11 @@ const Index = () => {
       <main>
         <Hero />
         <Features />
-        <SecurityMeasures />
         <UserGroups />
+        <SecurityMeasures />
         <EmergencyProtocols />
+        <CaseStudies />
+        <SecurityModules />
         <RequestDemo />
       </main>
       <Footer />
