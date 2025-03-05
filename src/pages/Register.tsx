@@ -54,7 +54,7 @@ const Register = () => {
                 </div>
                 
                 <div className="ml-8">
-                  <a href="https://proton.me/mail/signup" target="_blank" rel="noopener noreferrer" className="inline-block">
+                  <a href="https://account.proton.me/mail/signup?plan=free&billing=12" target="_blank" rel="noopener noreferrer" className="inline-block">
                     <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
                       Create ProtonMail Account
                       <ExternalLink className="h-4 w-4 ml-1" />
