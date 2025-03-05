@@ -13,7 +13,13 @@ interface PlanPricingProps {
 const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingProps) => {
   const [deviceCount, setDeviceCount] = useState(1);
   const isHardware = billingCycle.includes('unit');
+  
+  // Check if this is a device plan
   const devicePlan = isDevicePlan(billingCycle);
+  
+  console.log('PlanPricing - billingCycle:', billingCycle);
+  console.log('PlanPricing - isDevicePlan:', devicePlan);
+  
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);
   
   // Calculate multi-device costs if it's a device plan

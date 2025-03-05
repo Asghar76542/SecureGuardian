@@ -28,6 +28,10 @@ const PurchaseConfirmDialog = ({
   isSubmitting,
   deviceCount = 1
 }: PurchaseConfirmDialogProps) => {
+  console.log('PurchaseConfirmDialog - billingCycle:', billingCycle);
+  console.log('PurchaseConfirmDialog - deviceCount:', deviceCount);
+  console.log('PurchaseConfirmDialog - isDevicePlan:', isDevicePlan(billingCycle));
+  
   const isHardware = billingCycle.includes('unit');
   const devicePlan = isDevicePlan(billingCycle);
   const monthlyEquivalent = getMonthlyEquivalent(price, billingCycle);

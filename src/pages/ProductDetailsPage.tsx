@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -39,6 +38,8 @@ const ProductDetailsPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { profile } = useAuth();
+  
+  console.log('ProductDetailsPage - productId:', productId);
 
   const { 
     data: product, 
@@ -82,9 +83,20 @@ const ProductDetailsPage = () => {
         .order('price', { ascending: true });
         
       if (error) throw error;
-      return data as Plan[];
+      
+      console.log('Fetched plans:', data);
+      
+      const modifiedData = data.map(plan => {
+        if (product?.type === 'security' && !plan.billing_cycle.includes('device')) {
+          console.log('Modifying plan to be a device plan:', plan.name);
+          return { ...plan, billing_cycle: 'per-device' };
+        }
+        return plan;
+      });
+      
+      return modifiedData as Plan[];
     },
-    enabled: !!productId
+    enabled: !!productId && !!product
   });
 
   const getIcon = () => {

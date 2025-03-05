@@ -34,6 +34,9 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [deviceCount, setDeviceCount] = useState(1);
   
+  console.log('PlanCard - billing_cycle:', plan.billing_cycle);
+  console.log('PlanCard - isDevicePlan:', isDevicePlan(plan.billing_cycle));
+  
   const devicePlan = isDevicePlan(plan.billing_cycle);
   
   // Get pricing details for device-based plans
@@ -113,6 +116,7 @@ const PlanCard = ({ plan, productName }: PlanProps) => {
   };
 
   const handleDeviceCountChange = (count: number) => {
+    console.log('Device count changed to:', count);
     setDeviceCount(count);
   };
 

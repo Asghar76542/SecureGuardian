@@ -29,6 +29,11 @@ export const getMonthlyEquivalent = (price: number, billingCycle?: string) => {
     return null;
   }
   
+  // If it's a device plan, this is already the monthly price
+  if (billingCycle && (billingCycle === 'per-device' || billingCycle.includes('device'))) {
+    return null;
+  }
+  
   // Calculate the monthly equivalent (rounded to nearest pound)
   const monthlyPrice = Math.round(price / 12);
   
@@ -69,5 +74,11 @@ export const calculateMultiDeviceCost = (
  * Check if a plan is a device-based plan
  */
 export const isDevicePlan = (billingCycle?: string): boolean => {
-  return !!billingCycle && (billingCycle === 'per-device' || billingCycle.includes('device'));
+  if (!billingCycle) return false;
+  
+  // Check for exact match or contains 'device' or if it's a security plan (temporary fix)
+  return billingCycle === 'per-device' 
+    || billingCycle.includes('device')
+    || billingCycle === 'security-device';
 };
+
