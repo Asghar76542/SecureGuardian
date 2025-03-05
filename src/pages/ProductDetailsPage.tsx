@@ -7,7 +7,7 @@ import { useToast } from '@/components/ui/use-toast';
 import DashboardLayout from '@/components/DashboardLayout';
 import PlanCard from '@/components/products/PlanCard';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag } from 'lucide-react';
+import { ArrowLeft, Loader2, Shield, Database, Lock, Package, Key, Tag, Server, Cloud, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Accordion,
@@ -139,6 +139,7 @@ const ProductDetailsPage = () => {
   };
 
   const isSecuritySuite = product?.name?.includes("Security Suite");
+  const isInfrastructureSuite = product?.name?.includes("Infrastructure Suite");
 
   const isLoading = productLoading || plansLoading;
   const error = productError || plansError;
@@ -285,8 +286,119 @@ const ProductDetailsPage = () => {
             </Accordion>
           </div>
         </>
+      ) : isInfrastructureSuite ? (
+        <>
+          {/* Infrastructure Suite Components */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Key Infrastructure Components: Building Blocks for Success</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Cloud className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Secure and Scalable Storage</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Protect your critical data with encrypted, redundant, and easily accessible remote storage solutions.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Server className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">High-Performance Servers</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Run your applications and services on secure, reliable, and continuously monitored server infrastructure.
+                </p>
+              </div>
+              <div className="bg-card p-6 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="h-5 w-5 text-primary" />
+                  <h3 className="font-medium text-lg">Enterprise-Grade Secure Networking</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Ensure secure and private connectivity for your team and operations with our advanced VPN services.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Advanced Infrastructure Features */}
+          <div className="mb-8">
+            <h2 className="text-xl font-medium mb-4">Advanced Infrastructure Features: Engineered for Performance and Security</h2>
+            <Accordion type="single" collapsible className="mb-6">
+              <AccordionItem value="remote-storage">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Remote Storage System: Secure, Scalable, and Always Accessible Cloud Storage
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    Protect your valuable data with our Remote Storage System, a secure cloud storage solution built for businesses of all sizes. We employ advanced encryption both in transit and at rest, ensuring your data is protected from unauthorized access at every stage.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>End-to-End Encryption: Data is encrypted during upload, while stored, and during download</li>
+                      <li>Geographic Redundancy: Data is replicated across multiple separated data centers</li>
+                      <li>Scalable Storage Capacity: Easily scale your storage capacity as your business grows</li>
+                      <li>Version Control & Data Recovery: Maintain previous versions of files and easily restore data</li>
+                      <li>Secure Sharing & Collaboration: Control access permissions and securely share files</li>
+                      <li>Compliance Ready: Designed to meet compliance requirements for data storage and security</li>
+                      <li>User-Friendly Interface: Intuitive web interface and client applications</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="secure-servers">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Secure Servers: Hardened Infrastructure with Proactive Vulnerability Management
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    Power your applications and services with our Secure Servers, a robust and hardened server infrastructure designed for optimal performance and maximum security. Our servers are built on enterprise-grade hardware and undergo rigorous hardening processes.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>Hardened Server Infrastructure: Configured with security best practices to minimize attack surface</li>
+                      <li>Continuous Vulnerability Monitoring: Proactive scanning and timely patching</li>
+                      <li>Intrusion Detection and Prevention Systems: Real-time monitoring for malicious activity</li>
+                      <li>High-Performance Hardware: Enterprise-grade servers with powerful components</li>
+                      <li>Scalable Server Resources: Easily scale server resources as your application demands grow</li>
+                      <li>Managed Server Environment: We handle server maintenance, security updates, and monitoring</li>
+                      <li>Choice of Operating Systems: Support for various operating systems to meet your requirements</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              
+              <AccordionItem value="enterprise-vpn">
+                <AccordionTrigger className="text-lg font-medium hover:no-underline">
+                  Enterprise VPN: Secure and Private Network Access with Global Reach
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  <p className="mb-4">
+                    Ensure secure and private network access for your team and remote operations with our Enterprise VPN. We operate a global network of VPN servers across multiple regions, providing fast and reliable connections from anywhere in the world.
+                  </p>
+                  <div className="bg-secondary/20 p-4 rounded-md mb-4">
+                    <h4 className="font-medium mb-2">Key Benefits:</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+                      <li>Strict No-Logs Policy: We do not log or monitor your online activity</li>
+                      <li>Multi-Region Server Network: Choose from servers in multiple geographic locations</li>
+                      <li>Advanced Encryption Protocols: Industry-leading encryption protocols and strong ciphers</li>
+                      <li>Unlimited Bandwidth: Unrestricted bandwidth for fast and reliable connections</li>
+                      <li>Multiple Device Support: Connect multiple devices simultaneously with a single account</li>
+                      <li>Easy-to-Use Client Applications: User-friendly VPN clients for various systems</li>
+                      <li>Split Tunneling: Route only specific traffic through the VPN (higher-tier plans)</li>
+                    </ul>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        </>
       ) : (
-        // Standard product features section for non-Security Suite products
+        // Standard product features section for non-Suite products
         <div className="mb-8">
           <h2 className="text-xl font-medium mb-4">Key Features</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -307,7 +419,9 @@ const ProductDetailsPage = () => {
             ? 'Enterprise-grade security hardware with simple procurement options' 
             : product.type === 'security'
               ? 'Select the security plan that aligns with your organization\'s size, risk profile, and specific security requirements'
-              : 'Enterprise-grade security with simple annual billing'}
+              : product.type === 'infrastructure'
+                ? 'Choose the infrastructure plan that best aligns with your team size, operational needs, and budget'
+                : 'Enterprise-grade security with simple annual billing'}
         </p>
         
         {isSecuritySuite && (

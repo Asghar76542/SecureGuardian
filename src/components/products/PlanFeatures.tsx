@@ -1,5 +1,6 @@
 
 import { Check } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface PlanFeaturesProps {
   features: string[];
@@ -8,7 +9,11 @@ interface PlanFeaturesProps {
 const PlanFeatures = ({ features }: PlanFeaturesProps) => {
   return (
     <div className="space-y-3 mt-4">
-      <h3 className="text-sm font-medium mb-2">Plan Features</h3>
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-medium">Plan Features</h3>
+        <Separator className="flex-grow" />
+      </div>
+      
       {features.map((feature, index) => (
         <div key={index} className="flex items-start gap-2">
           <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center mt-0.5 flex-shrink-0">
