@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import ProductsPage from "./pages/ProductsPage";
 import ProductDetailsPage from "./pages/ProductDetailsPage";
 import PurchaseOrdersPage from "./pages/admin/PurchaseOrdersPage";
+import ProductSetupPage from "./pages/admin/ProductSetupPage";
 
 // Define the query client
 const queryClient = new QueryClient();
@@ -110,6 +111,11 @@ const App = () => (
             <Route path="/admin/purchase-orders" element={
               <ProtectedRoute requireAdmin={true}>
                 <PurchaseOrdersPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/product-setup" element={
+              <ProtectedRoute requireAdmin={true}>
+                <ProductSetupPage />
               </ProtectedRoute>
             } />
             <Route path="/admin/approve/:userId" element={

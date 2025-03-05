@@ -9,7 +9,7 @@ import UserManagement from '@/components/dashboard/admin/UserManagement';
 import UserApprovals from '@/components/dashboard/admin/UserApprovals';
 import { useAuth } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks, ShoppingCart, Users2 } from 'lucide-react';
+import { Shield, Users, UserCheck, AlertTriangle, Activity, DatabaseZap, ListChecks, ShoppingCart, Users2, FileCheck } from 'lucide-react';
 import GlobalThreatMonitor from '@/components/dashboard/admin/GlobalThreatMonitor';
 import ComplianceControls from '@/components/dashboard/admin/ComplianceControls';
 import SystemLogs from '@/components/dashboard/admin/SystemLogs';
@@ -83,6 +83,28 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
+              
+              <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/20 rounded-full">
+                      <FileCheck className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Product Setup Instructions</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Access detailed checklists and guides for properly setting up products
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => navigate('/admin/product-setup')}
+                    className="shrink-0"
+                  >
+                    View Setup Guides
+                  </Button>
+                </div>
+              </div>
             
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
                 <div className="xl:col-span-2">

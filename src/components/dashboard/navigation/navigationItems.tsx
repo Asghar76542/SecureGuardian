@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   DatabaseZap,
   ShoppingCart,
-  Package
+  Package,
+  FileCheck
 } from 'lucide-react';
 
 // Define the type for navigation items
@@ -97,6 +98,13 @@ export const getNavigationItems = (pathname: string, isAdmin: boolean): {
       icon: <ShoppingCart className="h-5 w-5" />,
       href: '/admin/purchase-orders',
       active: pathname.includes('/admin/purchase-orders'),
+      adminOnly: true
+    },
+    {
+      name: 'Product Setup',
+      icon: <FileCheck className="h-5 w-5" />,
+      href: '/admin/product-setup',
+      active: pathname.includes('/admin/product-setup'),
       adminOnly: true
     }
   ];
