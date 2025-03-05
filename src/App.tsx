@@ -60,24 +60,14 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/dashboard/incidents" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/mfa" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/dashboard/support" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
             
             {/* Admin routes */}
             <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/system" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
               </ProtectedRoute>
@@ -88,16 +78,6 @@ const App = () => (
               </ProtectedRoute>
             } />
             <Route path="/admin/approvals" element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/global-threats" element={
-              <ProtectedRoute requireAdmin={true}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/emergency" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
               </ProtectedRoute>

@@ -14,10 +14,11 @@ import {
   AlertTriangle,
   Lock,
   FileText,
-  History,
   HelpCircle,
   Users,
-  UserCheck
+  Cog,
+  LayoutDashboard,
+  DatabaseZap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,84 +33,80 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
-  // Simplified navigation structure - main sections only
-  const mainNavItems = [
+  // Simplified navigation structure - regular users
+  const userNavItems = [
     {
       name: 'Dashboard',
-      icon: <Shield className="h-5 w-5" />,
+      icon: <LayoutDashboard className="h-5 w-5" />,
       href: '/dashboard',
-      active: location.pathname === '/dashboard' || 
-              location.pathname.includes('/dashboard/devices') ||
-              location.pathname.includes('/dashboard/threats') ||
-              location.pathname.includes('/dashboard/communications') ||
-              location.pathname.includes('/dashboard/reports') ||
-              location.pathname.includes('/dashboard/incidents') ||
-              location.pathname.includes('/dashboard/mfa') ||
-              location.pathname.includes('/dashboard/support')
+      active: location.pathname === '/dashboard' || location.pathname === '/dashboard/'
     },
     {
-      name: 'Device Security',
+      name: 'Devices',
       icon: <Laptop className="h-5 w-5" />,
       href: '/dashboard/devices',
       active: location.pathname.includes('/dashboard/devices'),
       badge: 3
     },
     {
-      name: 'Threat Intelligence',
+      name: 'Threats',
       icon: <AlertTriangle className="h-5 w-5" />,
       href: '/dashboard/threats',
       active: location.pathname.includes('/dashboard/threats'),
       badge: 2
     },
     {
-      name: 'Secure Communications',
+      name: 'Communications',
       icon: <Lock className="h-5 w-5" />,
       href: '/dashboard/communications',
       active: location.pathname.includes('/dashboard/communications')
     },
     {
-      name: 'Reports & Compliance',
+      name: 'Reports',
       icon: <FileText className="h-5 w-5" />,
       href: '/dashboard/reports',
       active: location.pathname.includes('/dashboard/reports')
     }
   ];
 
-  // Admin sections
+  // Admin navigation
   const adminNavItems = [
     {
       name: 'Admin Dashboard',
       icon: <Shield className="h-5 w-5" />,
       href: '/admin',
-      active: location.pathname === '/admin' || 
-              location.pathname.includes('/admin/users') ||
-              location.pathname.includes('/admin/approvals') ||
-              location.pathname.includes('/admin/global-threats') ||
-              location.pathname.includes('/admin/emergency') ||
-              location.pathname.includes('/admin/audit') ||
+      active: location.pathname === '/admin' || location.pathname === '/admin/',
+      adminOnly: true
+    },
+    {
+      name: 'System Management',
+      icon: <DatabaseZap className="h-5 w-5" />,
+      href: '/admin/system',
+      active: location.pathname.includes('/admin/users') || 
+              location.pathname.includes('/admin/approvals') || 
+              location.pathname.includes('/admin/global-threats') || 
+              location.pathname.includes('/admin/audit') || 
               location.pathname.includes('/admin/logs'),
-      adminOnly: true
-    },
-    {
-      name: 'User Management',
-      icon: <Users className="h-5 w-5" />,
-      href: '/admin/users',
-      active: location.pathname.includes('/admin/users'),
-      adminOnly: true
-    },
-    {
-      name: 'Approvals',
-      icon: <UserCheck className="h-5 w-5" />,
-      href: '/admin/approvals',
-      active: location.pathname.includes('/admin/approvals'),
       adminOnly: true,
       badge: 1
     }
   ];
 
+  // Common items for all users
+  const commonNavItems = [
+    {
+      name: 'Settings & Support',
+      icon: <Cog className="h-5 w-5" />,
+      href: '/settings',
+      active: location.pathname.includes('/settings') || location.pathname.includes('/dashboard/support')
+    }
+  ];
+
+  // Combine navigation items based on user role
   const menuItems = [
-    ...mainNavItems,
     ...(isAdmin ? adminNavItems : []),
+    ...userNavItems,
+    ...commonNavItems
   ];
 
   const handleSignOut = async () => {
@@ -177,18 +174,6 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
               ))}
             </ul>
           </nav>
-
-          {/* Support & Help */}
-          <div className="p-2 border-t border-border">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-muted-foreground h-auto py-3"
-              onClick={() => navigate('/dashboard/support')}
-            >
-              <HelpCircle className="h-5 w-5 mr-3" />
-              Help & Support
-            </Button>
-          </div>
 
           {/* Footer */}
           <div className="p-4 border-t border-border">
