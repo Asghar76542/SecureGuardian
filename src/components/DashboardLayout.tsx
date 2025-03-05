@@ -74,32 +74,32 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     {
       name: 'User Management',
       icon: <Users className="h-5 w-5" />,
-      href: '/dashboard/users',
+      href: '/admin/users',
       adminOnly: true,
     },
     {
       name: 'Global Threats',
       icon: <AlertTriangle className="h-5 w-5" />,
-      href: '/dashboard/global-threats',
+      href: '/admin/global-threats',
       adminOnly: true,
       badge: 5,
     },
     {
       name: 'Emergency Protocols',
       icon: <Bell className="h-5 w-5" />,
-      href: '/dashboard/emergency',
+      href: '/admin/emergency',
       adminOnly: true,
     },
     {
       name: 'Audit Controls',
       icon: <FileText className="h-5 w-5" />,
-      href: '/dashboard/audit',
+      href: '/admin/audit',
       adminOnly: true,
     },
     {
       name: 'System Logs',
       icon: <History className="h-5 w-5" />,
-      href: '/dashboard/logs',
+      href: '/admin/logs',
       adminOnly: true,
     },
   ];

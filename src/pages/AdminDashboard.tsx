@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import SecuritySummary from '@/components/dashboard/SecuritySummary';
 import DeviceList from '@/components/dashboard/DeviceList';
@@ -14,6 +15,22 @@ import SystemLogs from '@/components/dashboard/admin/SystemLogs';
 
 const AdminDashboard = () => {
   const { profile } = useAuth();
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState('users');
+
+  // Determine which tab to show based on the URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/admin/global-threats')) {
+      setActiveTab('threats');
+    } else if (path.includes('/admin/audit')) {
+      setActiveTab('compliance');
+    } else if (path.includes('/admin/logs')) {
+      setActiveTab('logs');
+    } else if (path.includes('/admin/users') || path === '/admin') {
+      setActiveTab('users');
+    }
+  }, [location.pathname]);
 
   return (
     <DashboardLayout>
@@ -26,7 +43,7 @@ const AdminDashboard = () => {
 
       <SecuritySummary />
 
-      <Tabs defaultValue="users" className="mt-6 mb-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6 mb-6">
         <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />

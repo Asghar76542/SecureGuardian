@@ -34,12 +34,46 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/register" element={<Register />} />
             <Route path="/auth/pending" element={<PendingApproval />} />
+            
+            {/* Dashboard routes */}
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
+            <Route path="/dashboard/*" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admin routes */}
             <Route path="/admin" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/users" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/global-threats" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/emergency" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/audit" element={
+              <ProtectedRoute requireAdmin={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/logs" element={
               <ProtectedRoute requireAdmin={true}>
                 <AdminDashboard />
               </ProtectedRoute>
@@ -49,6 +83,7 @@ const App = () => (
                 <ApproveUserPage />
               </ProtectedRoute>
             } />
+            
             <Route path="/quick-approval" element={<QuickApproval />} />
             <Route path="/settings" element={
               <ProtectedRoute>
