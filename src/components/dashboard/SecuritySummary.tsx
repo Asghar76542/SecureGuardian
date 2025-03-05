@@ -83,6 +83,8 @@ const SecuritySummary = () => {
     active_threats: 0,
     devices_at_risk: 0,
     total_devices: 0,
+    last_scan_time: null,
+    time_since_scan: null,
   };
   
   const lastScan = getLastScanText(stats.last_scan_time, stats.time_since_scan);
