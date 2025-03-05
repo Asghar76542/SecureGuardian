@@ -1,10 +1,20 @@
 
-Note: Please upload a high-quality, professional security shield logo image that is:
-- Minimal and geometric in design
-- Has a clean, modern look with a purple/blue color scheme
-- Ideally a 3D or flat design shield with technological elements
-- No text or complex details
-- Transparent background (PNG format)
-- At least 500x500px, ideally 1000x1000px
+To display the shield security image in the Hero component, please:
 
-Once uploaded, rename it to "shield-security.png" and place it in the public/lovable-uploads/ directory.
+1. Upload a high-quality security shield logo image with these specifications:
+   - Minimal and geometric in design
+   - Clean, modern look with a purple/blue color scheme
+   - 3D or flat design shield with technological elements
+   - No text or complex details
+   - Transparent background (PNG format)
+   - At least 500x500px, ideally 1000x1000px
+
+2. After uploading, rename it to "shield-security.png" and ensure it's placed in the public/lovable-uploads/ directory.
+
+Alternative: If you can't upload a custom image, you can use this placeholder in Hero.tsx:
+
+```jsx
+<div className="w-full h-full flex items-center justify-center bg-primary/10 rounded-2xl">
+  <Shield className="w-32 h-32 text-primary opacity-80" />
+</div>
+```

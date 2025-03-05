@@ -24,7 +24,7 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="relative py-24 bg-card/30">
+    <section className="relative py-24 mt-12 bg-card/30">
       <div className="section-container">
         <div className="flex justify-center">
           <div className="section-tag">

@@ -1,8 +1,18 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const Hero = () => {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/lovable-uploads/shield-security.png";
+    img.onload = () => setImageLoaded(true);
+    img.onerror = () => setImageLoaded(false);
+  }, []);
+
   return (
     <section className="relative min-h-[90vh] flex items-center py-24 overflow-hidden">
       {/* Background grid effect with gradient overlay */}
@@ -54,11 +64,17 @@ const Hero = () => {
               <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full"></div>
               
               <div className="relative bg-gradient-to-br from-card/80 to-card/30 backdrop-blur-xl rounded-2xl overflow-hidden border border-primary/20 p-8 shadow-2xl max-w-md">
-                <img 
-                  src="/lovable-uploads/shield-security.png" 
-                  alt="Security Shield"
-                  className="w-full h-auto object-cover"
-                />
+                {imageLoaded ? (
+                  <img 
+                    src="/lovable-uploads/shield-security.png" 
+                    alt="Security Shield"
+                    className="w-full h-auto object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-64 flex items-center justify-center bg-primary/10 rounded-xl">
+                    <Shield className="w-32 h-32 text-primary opacity-80" />
+                  </div>
+                )}
               </div>
               
               {/* Geometric accent elements */}

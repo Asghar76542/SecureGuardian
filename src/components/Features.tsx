@@ -1,5 +1,5 @@
 
-import { Shield, Lock, CheckCircle, Zap, AlertTriangle, Database, Globe, Key } from "lucide-react";
+import { Shield, Lock, CheckCircle, Zap, Database, Globe, Key } from "lucide-react";
 
 const featureItems = [
   {
@@ -71,16 +71,19 @@ const Features = () => {
         </div>
       </div>
 
-      <div className="absolute right-0 bottom-0 max-w-lg p-8 hidden lg:block">
-        <div className="card-highlight rounded-2xl p-8 border shadow-glow">
-          <h3 className="text-xl font-semibold mb-4 text-center">Zero Trust Security</h3>
-          <p className="text-sm text-muted-foreground mb-6 text-center">
-            Continuous verification and strict access controls for all resources regardless of location
-          </p>
-          <div className="flex justify-center">
-            <button className="bg-primary text-white px-5 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors">
-              Learn More
-            </button>
+      {/* Moving this card to a better position with proper spacing */}
+      <div className="section-container mt-16">
+        <div className="max-w-lg mx-auto">
+          <div className="card-highlight rounded-2xl p-8 border shadow-glow">
+            <h3 className="text-xl font-semibold mb-4 text-center">Zero Trust Security</h3>
+            <p className="text-sm text-muted-foreground mb-6 text-center">
+              Continuous verification and strict access controls for all resources regardless of location
+            </p>
+            <div className="flex justify-center">
+              <button className="bg-primary text-white px-5 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors">
+                Learn More
+              </button>
+            </div>
           </div>
         </div>
       </div>

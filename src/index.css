@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -64,7 +65,7 @@
   }
 
   .section-container {
-    @apply max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24;
+    @apply max-w-7xl mx-auto px-6 md:px-8 py-8 md:py-12;
   }
 
   .section-title {
