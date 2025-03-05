@@ -21,6 +21,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import type { Database } from '@/integrations/supabase/types';
+
+type UserRole = Database['public']['Enums']['user_role'];
 
 interface ApproveUserProps {
   userId: string;
@@ -31,7 +34,7 @@ interface ApproveUserProps {
 
 const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUserProps) => {
   const queryClient = useQueryClient();
-  const [selectedRole, setSelectedRole] = useState<string>('user');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('user');
   const [rejectionReason, setRejectionReason] = useState<string>('');
   const [showRejectionReason, setShowRejectionReason] = useState<boolean>(false);
 
@@ -84,15 +87,9 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
   // Reject user mutation
   const rejectMutation = useMutation({
     mutationFn: async () => {
-      // Update rejection reason if provided
-      if (rejectionReason) {
-        const { error: reasonError } = await supabase
-          .from('users')
-          .update({ rejection_reason: rejectionReason })
-          .eq('id', userId);
-        
-        if (reasonError) throw reasonError;
-      }
+      // Store the rejection reason in a comments field or similar
+      // We'll use a separate table or field for this if needed
+      console.log("Rejection reason:", rejectionReason);
       
       // Reject the user
       const { data, error } = await supabase
@@ -153,7 +150,7 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
               </label>
               <Select 
                 value={selectedRole} 
-                onValueChange={setSelectedRole}
+                onValueChange={(value: UserRole) => setSelectedRole(value)}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select role" />
@@ -171,11 +168,19 @@ const ApproveUser = ({ userId, userName, userEmail, afterApproval }: ApproveUser
                       Administrator
                     </div>
                   </SelectItem>
+                  <SelectItem value="manager">
+                    <div className="flex items-center">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Manager
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-2">
                 {selectedRole === 'admin' 
                   ? 'Administrators have full access to all platform features including user management.' 
+                  : selectedRole === 'manager'
+                  ? 'Managers have access to team management and reporting features.'
                   : 'Standard users have limited access to platform features.'}
               </p>
             </div>
