@@ -83,6 +83,25 @@ export const calculateMultiDeviceCost = (
   const additionalSetupFee = Math.round((baseAdditionalSetupFee * multiplier) * 100) / 100;
   const additionalYearlyPrice = Math.round((baseAdditionalYearlyPrice * multiplier) * 100) / 100;
   
+  // Calculate costs for each device individually for itemized breakdown
+  const deviceItems = [{
+    setupFee: firstDeviceSetupFee,
+    yearlyPrice: firstDeviceYearlyPrice,
+    isFirstDevice: true
+  }];
+  
+  // Add additional devices if any
+  if (deviceCount > 1) {
+    for (let i = 1; i < deviceCount; i++) {
+      deviceItems.push({
+        setupFee: additionalSetupFee,
+        yearlyPrice: additionalYearlyPrice,
+        isFirstDevice: false
+      });
+    }
+  }
+  
+  // Calculate totals
   let totalSetupFee = firstDeviceSetupFee;
   let totalYearlyPrice = firstDeviceYearlyPrice;
   
@@ -102,6 +121,12 @@ export const calculateMultiDeviceCost = (
     setupFee: totalSetupFee,
     yearlyPrice: totalYearlyPrice,
     totalFirstPayment: totalSetupFee + totalYearlyPrice,
+    tierMultiplier: multiplier,
+    baseFirstDeviceSetupFee,
+    baseFirstDeviceYearlyPrice,
+    baseAdditionalSetupFee,
+    baseAdditionalYearlyPrice,
+    deviceItems
   };
 };
 
@@ -151,5 +176,17 @@ export const getTierDisplayName = (tier: PriceTier): string => {
     case 'pro': return 'Professional';
     case 'enterprise': return 'Enterprise';
     default: return 'Standard';
+  }
+};
+
+/**
+ * Get the tier multiplier as a percentage increase
+ */
+export const getTierPercentageIncrease = (tier: PriceTier): string => {
+  switch (tier) {
+    case 'standard': return '0%';
+    case 'pro': return '+30%';
+    case 'enterprise': return '+69%';
+    default: return '0%';
   }
 };
