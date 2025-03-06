@@ -84,8 +84,8 @@ const PurchaseConfirmDialog = ({
                 <span className="font-medium">{formatPrice(deviceCosts?.setupFee || 0)}</span>
               </div>
               <div className="flex justify-between mb-2">
-                <span>Monthly subscription:</span>
-                <span className="font-medium">{formatPrice(deviceCosts?.monthlyPrice || 0)}/month</span>
+                <span>Annual subscription:</span>
+                <span className="font-medium">{formatPrice(deviceCosts?.yearlyPrice || 0)}/year</span>
               </div>
               <div className="flex justify-between border-t pt-2 mt-2">
                 <span>First payment total:</span>

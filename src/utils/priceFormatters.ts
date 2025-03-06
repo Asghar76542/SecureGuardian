@@ -15,7 +15,7 @@ export const formatBillingCycle = (billingCycle?: string) => {
   if (!billingCycle) return '';
   
   if (billingCycle === 'per-device' || billingCycle.includes('device')) {
-    return 'per device/month';
+    return 'per device/year';
   } else if (billingCycle.includes('unit')) {
     return 'per unit';
   } else {
@@ -29,7 +29,7 @@ export const getMonthlyEquivalent = (price: number, billingCycle?: string) => {
     return null;
   }
   
-  // If it's a device plan, this is already the monthly price
+  // If it's a device plan, this is already the yearly price, no need to calculate monthly equivalent
   if (billingCycle && (billingCycle === 'per-device' || billingCycle.includes('device'))) {
     return null;
   }
@@ -57,16 +57,16 @@ export const getMonthlyPriceText = (price: number) => {
  */
 export const calculateMultiDeviceCost = (
   deviceCount: number, 
-  monthlyPrice: number, 
-  setupFeePerDevice: number = 80
+  yearlyPrice: number, 
+  setupFeePerDevice: number = 70
 ) => {
   const totalSetupFee = setupFeePerDevice * deviceCount;
-  const totalMonthlyPrice = monthlyPrice * deviceCount;
+  const totalYearlyPrice = yearlyPrice * deviceCount;
   
   return {
     setupFee: totalSetupFee,
-    monthlyPrice: totalMonthlyPrice,
-    totalFirstPayment: totalSetupFee + totalMonthlyPrice,
+    yearlyPrice: totalYearlyPrice,
+    totalFirstPayment: totalSetupFee + totalYearlyPrice,
   };
 };
 

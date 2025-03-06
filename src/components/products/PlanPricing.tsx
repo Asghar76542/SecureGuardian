@@ -81,8 +81,8 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
                   <span className="font-medium">{formatPrice(deviceCosts.setupFee)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Monthly subscription:</span>
-                  <span className="font-medium">{formatPrice(deviceCosts.monthlyPrice)}/month</span>
+                  <span>Annual subscription:</span>
+                  <span className="font-medium">{formatPrice(deviceCosts.yearlyPrice)}/year</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t mt-2">
                   <span>First payment:</span>
