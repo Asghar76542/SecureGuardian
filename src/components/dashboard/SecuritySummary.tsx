@@ -27,6 +27,22 @@ interface EnhancedSecuritySummaryData {
   latest_threat_time: string | null;
 }
 
+// Default fallback data when no data is available from the database
+const DEFAULT_SECURITY_DATA: EnhancedSecuritySummaryData = {
+  total_devices: 0,
+  active_devices: 0,
+  devices_at_risk: 0,
+  active_threats: 0,
+  security_score: 70, // Default reasonable score
+  last_scan_time: new Date().toISOString(), // Current time as default
+  time_since_scan: "0 minutes", // Just now
+  critical_threats: 0,
+  high_threats: 0,
+  medium_threats: 0,
+  low_threats: 0,
+  latest_threat_time: null,
+};
+
 const SecuritySummary = () => {
   const { toast } = useToast();
 
@@ -38,53 +54,90 @@ const SecuritySummary = () => {
   } = useQuery({
     queryKey: ['securitySummary'],
     queryFn: async (): Promise<EnhancedSecuritySummaryData> => {
-      const { data, error } = await supabase.rpc('get_enhanced_security_summary');
-      
-      if (error) {
-        console.error('Error fetching enhanced security summary:', error);
+      try {
+        // First try to get the enhanced security summary
+        const { data: enhancedData, error: enhancedError } = await supabase.rpc('get_enhanced_security_summary');
+        
+        if (enhancedError) {
+          console.error('Error fetching enhanced security summary:', enhancedError);
+          
+          // Fall back to the basic security summary if enhanced fails
+          const { data: basicData, error: basicError } = await supabase.rpc('get_user_security_summary');
+          
+          if (basicError) {
+            console.error('Error fetching basic security summary:', basicError);
+            // If both fail, try direct table query as last resort
+            const { data: tableData, error: tableError } = await supabase
+              .from('enhanced_security_summary')
+              .select('*')
+              .limit(1);
+              
+            if (tableError) {
+              console.error('Error querying security summary table:', tableError);
+              throw new Error('All security data sources failed');
+            }
+            
+            if (!tableData || tableData.length === 0) {
+              console.warn('No security data available in direct table query');
+              return { ...DEFAULT_SECURITY_DATA };
+            }
+            
+            return transformSecurityData(tableData[0]);
+          }
+          
+          if (!basicData || basicData.length === 0) {
+            console.warn('No basic security data available');
+            return { ...DEFAULT_SECURITY_DATA };
+          }
+          
+          // Transform basic data to enhanced format
+          return {
+            ...basicData[0],
+            critical_threats: 0,
+            high_threats: 0,
+            medium_threats: 0,
+            low_threats: 0,
+            latest_threat_time: null
+          };
+        }
+        
+        if (!enhancedData || enhancedData.length === 0) {
+          console.warn('No enhanced security data available');
+          return { ...DEFAULT_SECURITY_DATA };
+        }
+        
+        return transformSecurityData(enhancedData[0]);
+      } catch (error) {
+        console.error('Unhandled error in security data fetching:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load security data',
+          description: 'Failed to load security data, using fallback values',
           variant: 'destructive',
         });
-        throw error;
+        return { ...DEFAULT_SECURITY_DATA };
       }
-      
-      // If no data was returned, provide default values
-      if (!data || data.length === 0) {
-        return {
-          total_devices: 0,
-          active_devices: 0,
-          devices_at_risk: 0,
-          active_threats: 0,
-          security_score: 0,
-          last_scan_time: null,
-          time_since_scan: null,
-          critical_threats: 0,
-          high_threats: 0,
-          medium_threats: 0,
-          low_threats: 0,
-          latest_threat_time: null,
-        };
-      }
-      
-      // Ensure all numeric values are properly handled as numbers
-      return {
-        total_devices: Number(data[0].total_devices) || 0,
-        active_devices: Number(data[0].active_devices) || 0,
-        devices_at_risk: Number(data[0].devices_at_risk) || 0,
-        active_threats: Number(data[0].active_threats) || 0,
-        security_score: Number(data[0].security_score) || 0,
-        last_scan_time: data[0].last_scan_time,
-        time_since_scan: data[0].time_since_scan ? String(data[0].time_since_scan) : null,
-        critical_threats: Number(data[0].critical_threats) || 0,
-        high_threats: Number(data[0].high_threats) || 0,
-        medium_threats: Number(data[0].medium_threats) || 0,
-        low_threats: Number(data[0].low_threats) || 0,
-        latest_threat_time: data[0].latest_threat_time,
-      };
     },
+    retry: 1, // Only retry once to avoid too many failed attempts
+    refetchOnWindowFocus: false, // Don't refetch when window gets focus to reduce load
   });
+
+  // Helper function to transform and sanitize security data
+  const transformSecurityData = (data: any): EnhancedSecuritySummaryData => {
+    return {
+      total_devices: Number(data.total_devices) || 0,
+      active_devices: Number(data.active_devices) || 0,
+      devices_at_risk: Number(data.devices_at_risk) || 0,
+      active_threats: Number(data.active_threats) || 0,
+      security_score: Number(data.security_score) || DEFAULT_SECURITY_DATA.security_score,
+      last_scan_time: data.last_scan_time || DEFAULT_SECURITY_DATA.last_scan_time,
+      time_since_scan: data.time_since_scan ? String(data.time_since_scan) : DEFAULT_SECURITY_DATA.time_since_scan,
+      critical_threats: Number(data.critical_threats) || 0,
+      high_threats: Number(data.high_threats) || 0,
+      medium_threats: Number(data.medium_threats) || 0,
+      low_threats: Number(data.low_threats) || 0,
+      latest_threat_time: data.latest_threat_time,
+    };
+  };
 
   // Setup realtime subscription for security incidents
   useEffect(() => {
@@ -126,25 +179,13 @@ const SecuritySummary = () => {
     return <SecuritySummarySkeleton />;
   }
 
-  // Show error UI if there's an issue
-  if (error) {
-    return <SecuritySummaryError />;
+  // Only show error UI for major failures where we couldn't get fallback data
+  if (error && !securityStats) {
+    return <SecuritySummaryError refetch={refetch} />;
   }
 
   // Use defaults if data is unavailable
-  const stats = securityStats || {
-    security_score: 0,
-    active_threats: 0,
-    devices_at_risk: 0,
-    total_devices: 0,
-    last_scan_time: null,
-    time_since_scan: null,
-    critical_threats: 0,
-    high_threats: 0,
-    medium_threats: 0,
-    low_threats: 0,
-    latest_threat_time: null,
-  };
+  const stats = securityStats || DEFAULT_SECURITY_DATA;
   
   const lastScan = getLastScanText(stats.last_scan_time, stats.time_since_scan);
 

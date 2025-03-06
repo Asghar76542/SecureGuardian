@@ -1,4 +1,3 @@
-
 /**
  * Utility functions for handling security data formatting and transformations
  */
@@ -68,6 +67,17 @@ export const getLastScanText = (lastScanTime: string | null, timeSinceScan: stri
   // Fallback to formatting the timestamp
   try {
     const scanDate = new Date(lastScanTime);
+    const now = new Date();
+    
+    // If scan time is within the last 24 hours, show relative time
+    const diff = now.getTime() - scanDate.getTime();
+    if (diff < 24 * 60 * 60 * 1000) { // Less than 24 hours
+      if (diff < 60 * 1000) return 'Just now';
+      if (diff < 60 * 60 * 1000) return `${Math.floor(diff / (60 * 1000))} minutes ago`;
+      return `${Math.floor(diff / (60 * 60 * 1000))} hours ago`;
+    }
+    
+    // Otherwise show formatted date
     return new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
       minute: 'numeric',
@@ -76,6 +86,7 @@ export const getLastScanText = (lastScanTime: string | null, timeSinceScan: stri
       day: 'numeric'
     }).format(scanDate);
   } catch (e) {
+    console.error('Error formatting scan date:', e);
     return "Unknown";
   }
 };
