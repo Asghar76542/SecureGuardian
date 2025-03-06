@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,12 +43,10 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
   const hardwareProduct = isHardwareProduct(plan.billing_cycle);
   const isSecuritySuite = productName.includes("Security Suite");
   
-  // Get pricing details for device-based plans
   const deviceCosts = devicePlan 
     ? calculateMultiDeviceCost(itemCount, plan.price) 
     : null;
     
-  // Get pricing details for hardware products
   const hardwareCosts = hardwareProduct
     ? calculateHardwareCost(itemCount, plan.price)
     : null;
@@ -67,7 +64,6 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
     setIsSubmitting(true);
     
     try {
-      // Calculate order details based on product type
       let orderAmount = plan.price;
       let orderNotes = null;
       
@@ -76,7 +72,7 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
         orderNotes = JSON.stringify({
           itemCount,
           setupFee: deviceCosts.setupFee,
-          monthlyPrice: deviceCosts.monthlyPrice
+          yearlyPrice: deviceCosts.yearlyPrice
         });
       } else if (hardwareProduct && hardwareCosts) {
         orderAmount = hardwareCosts.totalPrice;
@@ -86,7 +82,6 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
         });
       }
       
-      // Create purchase order
       await createPurchaseOrder(orderAmount, orderNotes);
       
       toast({
@@ -109,9 +104,7 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
     }
   };
 
-  // Helper function to create purchase order
   const createPurchaseOrder = async (orderAmount: number, orderNotes: string | null) => {
-    // Create the purchase order record
     const { data, error } = await supabase
       .from('purchase_orders')
       .insert({
@@ -127,7 +120,6 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
       
     if (error) throw error;
     
-    // Create the purchase order item
     const { error: itemError } = await supabase
       .from('purchase_order_items')
       .insert({
@@ -146,7 +138,6 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
     setItemCount(count);
   };
 
-  // Card classes for styling
   const cardClasses = `overflow-hidden h-full flex flex-col ${plan.is_popular ? 'border-primary' : ''} ${isSecuritySuite ? 'shadow-md' : ''}`;
 
   return (
