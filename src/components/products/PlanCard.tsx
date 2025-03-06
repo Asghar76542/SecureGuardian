@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +14,8 @@ import {
   calculateMultiDeviceCost, 
   calculateHardwareCost, 
   isDevicePlan, 
-  isHardwareProduct 
+  isHardwareProduct,
+  PriceTier 
 } from '@/utils/priceFormatters';
 
 interface PlanProps {
@@ -39,12 +41,22 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [itemCount, setItemCount] = useState(1);
   
+  // Determine tier from plan name
+  const determineTierFromName = (): PriceTier => {
+    const planNameLower = plan.name.toLowerCase();
+    if (planNameLower.includes('enterprise')) return 'enterprise';
+    if (planNameLower.includes('pro') || planNameLower.includes('professional')) return 'pro';
+    return 'standard';
+  };
+  
+  const tier = determineTierFromName();
+  
   const devicePlan = isDevicePlan(plan.billing_cycle);
   const hardwareProduct = isHardwareProduct(plan.billing_cycle);
   const isSecuritySuite = productName.includes("Security Suite");
   
   const deviceCosts = devicePlan 
-    ? calculateMultiDeviceCost(itemCount, plan.price) 
+    ? calculateMultiDeviceCost(itemCount, plan.price, tier) 
     : null;
     
   const hardwareCosts = hardwareProduct
@@ -70,7 +82,12 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
       if (devicePlan && deviceCosts) {
         orderAmount = deviceCosts.totalFirstPayment;
         orderNotes = JSON.stringify({
+          tier,
           itemCount,
+          firstDeviceSetupFee: deviceCosts.firstDeviceSetupFee,
+          firstDeviceYearlyPrice: deviceCosts.firstDeviceYearlyPrice,
+          additionalSetupFee: deviceCosts.additionalSetupFee,
+          additionalYearlyPrice: deviceCosts.additionalYearlyPrice,
           setupFee: deviceCosts.setupFee,
           yearlyPrice: deviceCosts.yearlyPrice
         });
@@ -154,6 +171,7 @@ const PlanCard = ({ plan, productName, productType }: PlanProps) => {
             price={plan.price} 
             billingCycle={plan.billing_cycle}
             onDeviceCountChange={handleItemCountChange}
+            planName={plan.name}
           />
           
           <PlanFeatures features={plan.features} productType={productType} />

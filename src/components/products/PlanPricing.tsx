@@ -7,19 +7,38 @@ import {
   calculateMultiDeviceCost, 
   calculateHardwareCost,
   isDevicePlan,
-  isHardwareProduct
+  isHardwareProduct,
+  PriceTier,
+  getTierDisplayName
 } from '@/utils/priceFormatters';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface PlanPricingProps {
   price: number;
   billingCycle: string;
   onDeviceCountChange?: (count: number) => void;
+  planName?: string;
 }
 
-const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingProps) => {
+const PlanPricing = ({ price, billingCycle, onDeviceCountChange, planName = '' }: PlanPricingProps) => {
   const [itemCount, setItemCount] = useState(1);
+  const [tier, setTier] = useState<PriceTier>('standard');
+  
+  // Determine tier from plan name if not selected by user
+  const determineTierFromName = (): PriceTier => {
+    const planNameLower = planName.toLowerCase();
+    if (planNameLower.includes('enterprise')) return 'enterprise';
+    if (planNameLower.includes('pro') || planNameLower.includes('professional')) return 'pro';
+    return 'standard';
+  };
+  
+  // Use tier from plan name when component initializes
+  useState(() => {
+    const initialTier = determineTierFromName();
+    setTier(initialTier);
+  });
   
   // Check product types
   const devicePlan = isDevicePlan(billingCycle);
@@ -33,7 +52,7 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
   
   // Calculate costs based on product type
   const deviceCosts = devicePlan 
-    ? calculateMultiDeviceCost(itemCount, price) 
+    ? calculateMultiDeviceCost(itemCount, price, tier) 
     : null;
     
   const hardwareCosts = hardwareProduct
@@ -49,18 +68,41 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
       }
     }
   };
+  
+  const handleTierChange = (value: string) => {
+    setTier(value as PriceTier);
+  };
 
   return (
     <div className="mb-4">
       {/* Device plan pricing */}
-      {devicePlan && (
+      {devicePlan && deviceCosts && (
         <div className="space-y-4">
           <div>
-            <span className="text-3xl font-bold">{formatPrice(240)}</span>
+            <span className="text-3xl font-bold">{formatPrice(deviceCosts.firstDeviceYearlyPrice)}</span>
             <span className="text-muted-foreground ml-1">{formatBillingCycle(billingCycle)}</span>
           </div>
           
           <div className="border-t pt-3 mt-3">
+            {!planName && (
+              <div className="mb-4">
+                <Label htmlFor="tierSelect">Pricing Tier:</Label>
+                <Select 
+                  value={tier} 
+                  onValueChange={handleTierChange}
+                >
+                  <SelectTrigger id="tierSelect" className="w-full">
+                    <SelectValue placeholder="Select Tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="pro">Professional (+30%)</SelectItem>
+                    <SelectItem value="enterprise">Enterprise (+69%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
             <div className="flex items-center gap-2 mb-2">
               <Label htmlFor="deviceCount">Number of devices:</Label>
               <Input
@@ -74,22 +116,26 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
               />
             </div>
             
-            {deviceCosts && (
-              <div className="space-y-1 mt-3 text-sm">
-                <div className="flex justify-between">
-                  <span>One-time setup fee:</span>
-                  <span className="font-medium">{formatPrice(deviceCosts.setupFee)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Annual subscription:</span>
-                  <span className="font-medium">{formatPrice(deviceCosts.yearlyPrice)}/year</span>
-                </div>
-                <div className="flex justify-between pt-2 border-t mt-2">
-                  <span>First payment:</span>
-                  <span className="font-semibold">{formatPrice(deviceCosts.totalFirstPayment)}</span>
-                </div>
+            <div className="space-y-1 mt-3 text-sm">
+              <div className="flex justify-between">
+                <span>One-time setup fee:</span>
+                <span className="font-medium">{formatPrice(deviceCosts.setupFee)}</span>
               </div>
-            )}
+              <div className="flex justify-between">
+                <span>Annual subscription:</span>
+                <span className="font-medium">{formatPrice(deviceCosts.yearlyPrice)}/year</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t mt-2">
+                <span>First payment:</span>
+                <span className="font-semibold">{formatPrice(deviceCosts.totalFirstPayment)}</span>
+              </div>
+              
+              {tier !== 'standard' && (
+                <div className="mt-2 text-xs text-primary">
+                  <p>{getTierDisplayName(tier)} tier pricing applied</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

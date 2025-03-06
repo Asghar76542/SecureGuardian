@@ -7,7 +7,8 @@ export const formatPrice = (price: number) => {
   return new Intl.NumberFormat('en-GB', {
     style: 'currency',
     currency: 'GBP',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   }).format(price);
 };
 
@@ -52,23 +53,35 @@ export const getMonthlyPriceText = (price: number) => {
   return formatPrice(monthlyPrice);
 };
 
+// Tier price multipliers
+export type PriceTier = 'standard' | 'pro' | 'enterprise';
+
+const TIER_MULTIPLIERS = {
+  standard: 1.0,
+  pro: 1.3,      // 30% increase from standard
+  enterprise: 1.69  // 30% increase from pro (1.3 * 1.3 = 1.69)
+};
+
 /**
  * Calculate the total cost for multi-device plans with tiered pricing
- * 
- * First device: £70 setup fee, £240/year
- * Additional devices: £40 setup fee each, £10/year each
  */
 export const calculateMultiDeviceCost = (
   deviceCount: number, 
-  basePrice: number
+  basePrice: number,
+  tier: PriceTier = 'standard'
 ) => {
-  // First device cost
-  const firstDeviceSetupFee = 70;
-  const firstDeviceYearlyPrice = 240;
+  // Base prices for standard tier
+  const baseFirstDeviceSetupFee = 69;
+  const baseFirstDeviceYearlyPrice = 199;
+  const baseAdditionalSetupFee = 49;
+  const baseAdditionalYearlyPrice = 99;
   
-  // Additional device costs
-  const additionalSetupFee = 40;
-  const additionalYearlyPrice = 10;
+  // Apply tier multiplier
+  const multiplier = TIER_MULTIPLIERS[tier];
+  const firstDeviceSetupFee = Math.round((baseFirstDeviceSetupFee * multiplier) * 100) / 100;
+  const firstDeviceYearlyPrice = Math.round((baseFirstDeviceYearlyPrice * multiplier) * 100) / 100;
+  const additionalSetupFee = Math.round((baseAdditionalSetupFee * multiplier) * 100) / 100;
+  const additionalYearlyPrice = Math.round((baseAdditionalYearlyPrice * multiplier) * 100) / 100;
   
   let totalSetupFee = firstDeviceSetupFee;
   let totalYearlyPrice = firstDeviceYearlyPrice;
@@ -81,6 +94,11 @@ export const calculateMultiDeviceCost = (
   }
   
   return {
+    tier,
+    firstDeviceSetupFee,
+    firstDeviceYearlyPrice,
+    additionalSetupFee,
+    additionalYearlyPrice,
     setupFee: totalSetupFee,
     yearlyPrice: totalYearlyPrice,
     totalFirstPayment: totalSetupFee + totalYearlyPrice,
@@ -122,4 +140,16 @@ export const isHardwareProduct = (billingCycle?: string): boolean => {
   if (!billingCycle) return false;
   
   return billingCycle.includes('unit');
+};
+
+/**
+ * Get the tier name for display
+ */
+export const getTierDisplayName = (tier: PriceTier): string => {
+  switch (tier) {
+    case 'standard': return 'Standard';
+    case 'pro': return 'Professional';
+    case 'enterprise': return 'Enterprise';
+    default: return 'Standard';
+  }
 };
