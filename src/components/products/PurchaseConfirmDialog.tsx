@@ -79,14 +79,37 @@ const PurchaseConfirmDialog = ({
                 <span>Number of devices:</span>
                 <span className="font-medium">{deviceCount}</span>
               </div>
-              <div className="flex justify-between mb-2">
-                <span>Setup fee:</span>
-                <span className="font-medium">{formatPrice(deviceCosts?.setupFee || 0)}</span>
-              </div>
-              <div className="flex justify-between mb-2">
-                <span>Annual subscription:</span>
-                <span className="font-medium">{formatPrice(deviceCosts?.yearlyPrice || 0)}/year</span>
-              </div>
+              {deviceCount === 1 ? (
+                <>
+                  <div className="flex justify-between mb-2">
+                    <span>Setup fee (first device):</span>
+                    <span className="font-medium">£70</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Annual subscription (first device):</span>
+                    <span className="font-medium">£240/year</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex justify-between mb-2">
+                    <span>Setup fee (first device):</span>
+                    <span className="font-medium">£70</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Setup fee ({deviceCount - 1} additional {deviceCount - 1 === 1 ? 'device' : 'devices'}):</span>
+                    <span className="font-medium">£{40 * (deviceCount - 1)}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Annual subscription (first device):</span>
+                    <span className="font-medium">£240/year</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Annual subscription ({deviceCount - 1} additional {deviceCount - 1 === 1 ? 'device' : 'devices'}):</span>
+                    <span className="font-medium">£{10 * (deviceCount - 1)}/year</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between border-t pt-2 mt-2">
                 <span>First payment total:</span>
                 <span className="font-bold">{formatPrice(deviceCosts?.totalFirstPayment || 0)}</span>

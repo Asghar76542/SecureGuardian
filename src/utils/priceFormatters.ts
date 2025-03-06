@@ -53,15 +53,32 @@ export const getMonthlyPriceText = (price: number) => {
 };
 
 /**
- * Calculate the total cost for multi-device plans
+ * Calculate the total cost for multi-device plans with tiered pricing
+ * 
+ * First device: £70 setup fee, £240/year
+ * Additional devices: £40 setup fee each, £10/year each
  */
 export const calculateMultiDeviceCost = (
   deviceCount: number, 
-  yearlyPrice: number, 
-  setupFeePerDevice: number = 70
+  basePrice: number
 ) => {
-  const totalSetupFee = setupFeePerDevice * deviceCount;
-  const totalYearlyPrice = yearlyPrice * deviceCount;
+  // First device cost
+  const firstDeviceSetupFee = 70;
+  const firstDeviceYearlyPrice = 240;
+  
+  // Additional device costs
+  const additionalSetupFee = 40;
+  const additionalYearlyPrice = 10;
+  
+  let totalSetupFee = firstDeviceSetupFee;
+  let totalYearlyPrice = firstDeviceYearlyPrice;
+  
+  // Calculate additional devices cost if any
+  if (deviceCount > 1) {
+    const additionalDevices = deviceCount - 1;
+    totalSetupFee += additionalSetupFee * additionalDevices;
+    totalYearlyPrice += additionalYearlyPrice * additionalDevices;
+  }
   
   return {
     setupFee: totalSetupFee,

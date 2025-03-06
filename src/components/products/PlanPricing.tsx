@@ -56,7 +56,7 @@ const PlanPricing = ({ price, billingCycle, onDeviceCountChange }: PlanPricingPr
       {devicePlan && (
         <div className="space-y-4">
           <div>
-            <span className="text-3xl font-bold">{formatPrice(price)}</span>
+            <span className="text-3xl font-bold">{formatPrice(240)}</span>
             <span className="text-muted-foreground ml-1">{formatBillingCycle(billingCycle)}</span>
           </div>
           
